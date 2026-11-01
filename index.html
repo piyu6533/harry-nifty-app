@@ -111,4 +111,420 @@
             </div>
 
             <!-- Trade Execution & Recommendation Card -->
-            <div class="p-3.5 rounded-xl bg-
+            <div class="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-800/60 shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-cyan-400">🎯 RECOMMENDED CONTRACT:</span>
+                        <span id="recContract" class="text-sm font-bold text-white font-mono">NIFTY 24400 CE</span>
+                    </div>
+                    <div class="text-xs text-slate-300 font-mono mt-1 flex flex-wrap gap-x-4">
+                        <span>Entry: <b id="recEntry" class="text-white">₹130 - ₹136</b></span>
+                        <span>SL: <b id="recSL" class="text-[#ff4365]">₹110</b></span>
+                        <span>Target: <b id="recTarget" class="text-[#00dc82]">₹175 / ₹210</b></span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button onclick="executePaytmOrder()" class="flex-1 sm:flex-none px-4 py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs flex items-center justify-center gap-1 transition">
+                        ⚡ Place Order (Paytm API)
+                    </button>
+                    <button onclick="copyTradePlan()" class="px-3 py-2 rounded bg-[#1c2536] text-slate-300 hover:text-white text-xs">
+                        📋 Copy
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sensibull Option Chain Matrix Table -->
+            <div id="optionChainSection" class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
+                <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex justify-between items-center text-xs">
+                    <span class="font-bold text-white">Sensibull Option Chain Matrix</span>
+                    <span class="text-slate-400 text-[10px] font-mono">OI Distribution near ATM</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-xs font-mono">
+                        <thead class="bg-[#1c2536]/70 text-[10px] text-slate-400">
+                            <tr>
+                                <th class="p-2 text-emerald-400">Call OI</th>
+                                <th class="p-2 text-emerald-400">Call LTP</th>
+                                <th class="p-2 text-white bg-[#080b11]">STRIKE</th>
+                                <th class="p-2 text-rose-400">Put LTP</th>
+                                <th class="p-2 text-rose-400">Put OI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fullChainTbody" class="divide-y divide-[#1c2536]/40">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Watchlist Screener -->
+        <div class="w-full lg:w-2/5 p-2.5 sm:p-3 overflow-y-auto">
+            <div class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
+                <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex justify-between items-center text-xs">
+                    <span class="font-bold text-white" id="watchlistHeader">Active Assets Screener</span>
+                    <span class="text-slate-400 text-[10px] font-mono">Tap any row to load chart</span>
+                </div>
+                <table class="w-full text-left text-xs font-mono">
+                    <thead class="bg-[#1c2536]/60 text-slate-400 text-[10px] uppercase font-semibold">
+                        <tr>
+                            <th class="p-2">Symbol</th>
+                            <th class="p-2 text-right">LTP (₹)</th>
+                            <th class="p-2 text-center">Signal</th>
+                            <th class="p-2 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="watchlistTbody" class="divide-y divide-[#1c2536]/40">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Server Settings Modal -->
+    <div id="serverModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-[#111723] border border-[#1c2536] rounded-xl w-full max-w-sm p-4 space-y-3 text-xs">
+            <div class="flex justify-between items-center font-bold text-white">
+                <span>Backend WebSocket URL</span>
+                <button onclick="toggleServerSettings()" class="text-slate-400">✕</button>
+            </div>
+            <p class="text-[11px] text-slate-400">Current live Render backend connection:</p>
+            <input type="text" id="wsServerInput" value="wss://harry-backend.onrender.com/ws/live" class="w-full p-2 rounded bg-[#080b11] border border-[#1c2536] text-white font-mono">
+            <button onclick="saveServerAddress()" class="w-full py-2 rounded bg-cyan-500 font-bold text-black">Save & Reconnect</button>
+        </div>
+    </div>
+
+    <script>
+        const UNIVERSE = [
+            // F&O Indices
+            { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'FNO', ltp: 24380.40, vwap: 24320.00, pcr: 1.24, step: 50 },
+            { symbol: 'BANKNIFTY', name: 'Nifty Bank Index', exchange: 'NSE', segment: 'FNO', ltp: 51840.10, vwap: 51950.00, pcr: 0.86, step: 100 },
+            { symbol: 'SENSEX', name: 'BSE Sensex Index', exchange: 'BSE', segment: 'FNO', ltp: 80120.50, vwap: 79950.00, pcr: 1.30, step: 100 },
+            { symbol: 'FINNIFTY', name: 'Nifty Fin Services', exchange: 'NSE', segment: 'FNO', ltp: 23910.80, vwap: 23890.00, pcr: 1.08, step: 50 },
+            { symbol: 'BANKEX', name: 'BSE Bankex Index', exchange: 'BSE', segment: 'FNO', ltp: 58450.00, vwap: 58580.00, pcr: 0.88, step: 100 },
+            { symbol: 'MIDCPNIFTY', name: 'Nifty Midcap Select', exchange: 'NSE', segment: 'FNO', ltp: 12450.25, vwap: 12390.00, pcr: 1.35, step: 25 },
+
+            // F&O & Intraday Stocks
+            { symbol: 'RELIANCE', name: 'Reliance Industries', exchange: 'NSE', segment: 'FNO', ltp: 2890.50, vwap: 2872.00, pcr: 1.31, step: 20 },
+            { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', exchange: 'NSE', segment: 'FNO', ltp: 1682.20, vwap: 1690.00, pcr: 0.82, step: 10 },
+            { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', exchange: 'NSE', segment: 'FNO', ltp: 1245.80, vwap: 1238.00, pcr: 1.15, step: 10 },
+            { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', exchange: 'NSE', segment: 'INTRADAY', ltp: 924.50, vwap: 931.00, pcr: 0.76, step: 10 },
+            { symbol: 'INFY', name: 'Infosys Ltd', exchange: 'NSE', segment: 'INTRADAY', ltp: 1845.00, vwap: 1832.00, pcr: 1.28, step: 20 },
+            { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd', exchange: 'NSE', segment: 'INTRADAY', ltp: 1650.10, vwap: 1638.00, pcr: 1.42, step: 20 },
+
+            // Long-Term Portfolio Stocks
+            { symbol: 'TCS', name: 'Tata Consultancy Services', exchange: 'NSE', segment: 'LONGTERM', ltp: 4120.00, vwap: 4110.00, pcr: 1.12, step: 50 },
+            { symbol: 'LT', name: 'Larsen & Toubro Ltd', exchange: 'NSE', segment: 'LONGTERM', ltp: 3580.00, vwap: 3560.00, pcr: 1.20, step: 50 },
+            { symbol: 'ITC', name: 'ITC Limited', exchange: 'NSE', segment: 'LONGTERM', ltp: 492.30, vwap: 489.00, pcr: 1.25, step: 5 },
+            { symbol: 'TITAN', name: 'Titan Company Ltd', exchange: 'NSE', segment: 'LONGTERM', ltp: 3410.00, vwap: 3390.00, pcr: 1.18, step: 20 },
+
+            // ETFs & Commodities
+            { symbol: 'NIFTYBEES', name: 'Nippon India Nifty 50 ETF', exchange: 'NSE', segment: 'COMMODITY_ETF', ltp: 268.40, vwap: 267.80, pcr: 1.24, step: 1 },
+            { symbol: 'GOLDBEES', name: 'Nippon India Gold ETF', exchange: 'NSE', segment: 'COMMODITY_ETF', ltp: 72.80, vwap: 72.40, pcr: 1.15, step: 1 },
+            { symbol: 'SILVERBEES', name: 'Nippon India Silver ETF', exchange: 'NSE', segment: 'COMMODITY_ETF', ltp: 94.50, vwap: 93.80, pcr: 1.10, step: 1 },
+            { symbol: 'CRUDEOIL', name: 'Crude Oil (MCX Mini)', exchange: 'MCX', segment: 'COMMODITY_ETF', ltp: 6150.00, vwap: 6120.00, pcr: 1.05, step: 50 }
+        ];
+
+        let currentSymbol = 'NIFTY';
+        let currentSegment = 'ALL';
+        let autoTradeActive = false;
+        let chartInstance = null;
+        let candleSeries = null;
+        let vwapSeries = null;
+        let socket = null;
+
+        function calculateSensibullLevels(asset) {
+            const step = asset.step || 10;
+            const atm = Math.round(asset.ltp / step) * step;
+            const strikes = [];
+            for (let i = -4; i <= 4; i++) {
+                strikes.push(atm + (i * step));
+            }
+
+            const chain = strikes.map(strike => {
+                const dist = Math.abs(strike - atm) / step;
+                const callOI = Math.max(0.4, (4.2 - dist * 0.5) + (strike > atm ? 1.1 : 0)).toFixed(2);
+                const putOI = Math.max(0.4, (4.2 - dist * 0.5) + (strike < atm ? 1.1 : 0)).toFixed(2);
+                return { strike, callOI: parseFloat(callOI), putOI: parseFloat(putOI) };
+            });
+
+            let minTotalLoss = Infinity;
+            let maxPainStrike = atm;
+            strikes.forEach(sPrice => {
+                let totalLoss = 0;
+                chain.forEach(row => {
+                    if (sPrice > row.strike) totalLoss += (sPrice - row.strike) * row.callOI;
+                    if (sPrice < row.strike) totalLoss += (row.strike - sPrice) * row.putOI;
+                });
+                if (totalLoss < minTotalLoss) { minTotalLoss = totalLoss; maxPainStrike = sPrice; }
+            });
+
+            let highestPutOI = -1, supportStrike = atm;
+            let highestCallOI = -1, resistanceStrike = atm;
+            chain.forEach(r => {
+                if (r.putOI > highestPutOI) { highestPutOI = r.putOI; supportStrike = r.strike; }
+                if (r.callOI > highestCallOI) { highestCallOI = r.callOI; resistanceStrike = r.strike; }
+            });
+
+            return { maxPain: maxPainStrike, support: supportStrike, resistance: resistanceStrike, chain };
+        }
+
+        function initChart(asset) {
+            const container = document.getElementById('chartContainer');
+            container.innerHTML = '';
+            chartInstance = LightweightCharts.createChart(container, {
+                width: container.clientWidth || 360,
+                height: 280,
+                layout: { background: { color: '#080b11' }, textColor: '#94a3b8' },
+                grid: { vertLines: { color: '#141c2a' }, horzLines: { color: '#141c2a' } },
+                timeScale: { borderColor: '#1c2536', timeVisible: true }
+            });
+
+            candleSeries = chartInstance.addCandlestickSeries({
+                upColor: '#00dc82', downColor: '#ff4365', borderVisible: false,
+                wickUpColor: '#00dc82', wickDownColor: '#ff4365'
+            });
+
+            vwapSeries = chartInstance.addLineSeries({ color: '#06b6d4', lineWidth: 2, title: 'VWAP' });
+
+            const candleData = [];
+            const vwapData = [];
+            let t = Math.floor(Date.now() / 1000) - (45 * 300);
+            let currentP = asset.vwap * 0.995;
+
+            for (let i = 0; i < 45; i++) {
+                let open = currentP;
+                let close = open + (Math.sin(i * 0.4) * (asset.ltp * 0.0016));
+                let high = Math.max(open, close) + 4;
+                let low = Math.min(open, close) - 4;
+                candleData.push({ time: t, open, high, low, close });
+                vwapData.push({ time: t, value: asset.vwap });
+                currentP = close;
+                t += 300;
+            }
+            candleData[candleData.length - 1].close = asset.ltp;
+            candleSeries.setData(candleData);
+            vwapSeries.setData(vwapData);
+        }
+
+        function renderFullChain(asset, sensibull) {
+            const tbody = document.getElementById('fullChainTbody');
+            const chainSec = document.getElementById('optionChainSection');
+            if (asset.segment === 'COMMODITY_ETF' || asset.segment === 'LONGTERM') {
+                chainSec.classList.add('hidden');
+                return;
+            }
+            chainSec.classList.remove('hidden');
+            tbody.innerHTML = '';
+
+            const atm = Math.round(asset.ltp / asset.step) * asset.step;
+            sensibull.chain.forEach(row => {
+                const isATM = row.strike === atm;
+                const isMaxPain = row.strike === sensibull.maxPain;
+                const isSupport = row.strike === sensibull.support;
+                const isResistance = row.strike === sensibull.resistance;
+
+                const callPrice = Math.max(12, (asset.ltp - row.strike) + (asset.ltp * 0.0055)).toFixed(1);
+                const putPrice = Math.max(12, (row.strike - asset.ltp) + (asset.ltp * 0.0055)).toFixed(1);
+
+                const tr = document.createElement('tr');
+                tr.className = isATM ? "bg-cyan-950/40 font-bold" : "hover:bg-[#1c2536]/30";
+                tr.innerHTML = `
+                    <td class="p-2 text-emerald-400 ${isResistance ? 'bg-rose-950/40 text-white font-bold' : ''}">
+                        ${row.callOI}M ${isResistance ? '⚠️ Res' : ''}
+                    </td>
+                    <td class="p-2 text-white font-bold">₹${callPrice}</td>
+                    <td class="p-2 font-bold text-cyan-300 bg-[#080b11] border-x border-[#1c2536]">
+                        ${row.strike} ${isATM ? '★ ATM' : ''} ${isMaxPain ? '🎯 Pain' : ''}
+                    </td>
+                    <td class="p-2 text-white font-bold">₹${putPrice}</td>
+                    <td class="p-2 text-rose-400 ${isSupport ? 'bg-emerald-950/40 text-white font-bold' : ''}">
+                        ${row.putOI}M ${isSupport ? '🛡️ Sup' : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderWatchlist() {
+            const tbody = document.getElementById('watchlistTbody');
+            const search = document.getElementById('symbolSearchInput').value.trim().toUpperCase();
+            tbody.innerHTML = '';
+
+            UNIVERSE.forEach(item => {
+                if (currentSegment !== 'ALL' && item.segment !== currentSegment) return;
+                if (search && !item.symbol.includes(search) && !item.name.toUpperCase().includes(search)) return;
+
+                const isBull = item.ltp >= item.vwap;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-[#1c2536]/40 cursor-pointer border-b border-[#1c2536]/40";
+                tr.innerHTML = `
+                    <td class="p-2" onclick="selectSymbol('${item.symbol}')">
+                        <div class="font-bold text-white flex items-center gap-1.5">
+                            ${item.symbol}
+                            <span class="text-[9px] px-1 rounded bg-[#080b11] text-cyan-400 border border-[#1c2536]">${item.exchange}</span>
+                        </div>
+                    </td>
+                    <td class="p-2 text-right font-bold text-white" onclick="selectSymbol('${item.symbol}')">
+                        ₹${item.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td class="p-2 text-center" onclick="selectSymbol('${item.symbol}')">
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border ${isBull ? 'text-[#00dc82] bg-emerald-950 border-[#00dc82]/40' : 'text-[#ff4365] bg-rose-950 border-[#ff4365]/40'}">
+                            ${isBull ? 'BUY' : 'SELL'}
+                        </span>
+                    </td>
+                    <td class="p-2 text-center">
+                        <button onclick="selectSymbol('${item.symbol}')" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 text-[10px]">View</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function selectSymbol(sym) {
+            currentSymbol = sym;
+            const asset = UNIVERSE.find(u => u.symbol === sym) || UNIVERSE[0];
+            const sb = calculateSensibullLevels(asset);
+            const isBull = asset.ltp >= asset.vwap;
+
+            document.getElementById('activeSymTitle').innerText = `${asset.symbol} (${asset.exchange})`;
+            document.getElementById('activeSignalBadge').innerText = isBull ? 'STRONG BUY CE' : 'STRONG BUY PE';
+            document.getElementById('activeSignalBadge').className = isBull 
+                ? "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40"
+                : "text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950 text-[#ff4365] border border-[#ff4365]/40";
+            document.getElementById('activeSegmentTag').innerText = asset.segment;
+
+            document.getElementById('valLTP').innerText = asset.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+            document.getElementById('valVWAP').innerText = asset.vwap.toFixed(2);
+            document.getElementById('valPCR').innerText = asset.pcr.toFixed(2);
+
+            document.getElementById('valMaxPain').innerText = sb.maxPain;
+            document.getElementById('valSupport').innerText = sb.support;
+            document.getElementById('valResistance').innerText = sb.resistance;
+
+            const atm = Math.round(asset.ltp / asset.step) * asset.step;
+            document.getElementById('recContract').innerText = `${asset.symbol} ${atm} ${isBull ? 'CE' : 'PE'}`;
+            document.getElementById('recEntry').innerText = `₹${(asset.ltp * 0.0055).toFixed(1)}`;
+            document.getElementById('recSL').innerText = `₹${(asset.ltp * 0.0042).toFixed(1)}`;
+            document.getElementById('recTarget').innerText = `₹${(asset.ltp * 0.0085).toFixed(1)}`;
+
+            initChart(asset);
+            renderFullChain(asset, sb);
+
+            if (autoTradeActive && isBull) {
+                executePaytmOrder(true);
+            }
+        }
+
+        function switchSegment(seg) {
+            currentSegment = seg;
+            ['ALL', 'FNO', 'INTRADAY', 'LONGTERM', 'COMMODITY_ETF'].forEach(s => {
+                const b = document.getElementById(`seg-${s}`);
+                if (b) {
+                    if (s === seg) b.className = "segment-btn active px-3 py-1 rounded border border-[#1c2536] text-cyan-300";
+                    else b.className = "segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400";
+                }
+            });
+            document.getElementById('watchlistHeader').innerText = `${seg.replace('_', ' & ')} Watchlist`;
+            renderWatchlist();
+        }
+
+        function toggleAutoTrading() {
+            autoTradeActive = !autoTradeActive;
+            const btn = document.getElementById('autoTradeBtn');
+            const dot = document.getElementById('autoTradeDot');
+            const txt = document.getElementById('autoTradeText');
+
+            if (autoTradeActive) {
+                btn.className = "flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded bg-cyan-950 border border-cyan-500 text-cyan-300 transition";
+                dot.className = "w-2 h-2 rounded-full bg-[#00dc82] animate-pulse";
+                txt.innerText = "Auto-Trade: ON";
+                alert("⚡ Auto-Trade Engine Activated! Routing automated orders upon signal confluence.");
+            } else {
+                btn.className = "flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 border border-slate-700 text-slate-300 transition";
+                dot.className = "w-2 h-2 rounded-full bg-slate-500";
+                txt.innerText = "Auto-Trade: OFF";
+            }
+        }
+
+        function executePaytmOrder(isAuto = false) {
+            const contract = document.getElementById('recContract').innerText;
+            const entry = document.getElementById('recEntry').innerText;
+            const sl = document.getElementById('recSL').innerText;
+            alert(`${isAuto ? '⚡ [AUTO-TRIGGER]' : '✅ [PAYTM ONE-CLICK TRADE]'}\nContract: ${contract}\nAction: BUY\nPrice: ${entry}\nStop Loss: ${sl}\nAPI Key: c43893b6648...`);
+        }
+
+        function connectLiveWebSocket() {
+            const serverUrl = localStorage.getItem('hn_ws_url') || 'wss://harry-backend.onrender.com/ws/live';
+            const badge = document.getElementById('liveStatusBadge');
+
+            try {
+                socket = new WebSocket(serverUrl);
+                socket.onopen = () => {
+                    badge.innerText = "● LIVE FEED ACTIVE";
+                    badge.className = "text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono";
+                };
+
+                socket.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === "TICK_UPDATE" && msg.data) {
+                        Object.keys(msg.data).forEach(sym => {
+                            const found = UNIVERSE.find(u => u.symbol === sym);
+                            if (found) {
+                                found.ltp = msg.data[sym].ltp;
+                                found.vwap = msg.data[sym].vwap;
+                            }
+                        });
+                        const current = UNIVERSE.find(u => u.symbol === currentSymbol);
+                        if (current) {
+                            document.getElementById('valLTP').innerText = current.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                            document.getElementById('valVWAP').innerText = current.vwap.toFixed(2);
+                        }
+                        renderWatchlist();
+                    }
+                };
+
+                socket.onclose = () => {
+                    badge.innerText = "RECONNECTING...";
+                    badge.className = "text-[9px] px-1.5 py-0.2 rounded-full bg-amber-950 text-amber-400 border border-amber-800 font-mono";
+                    setTimeout(connectLiveWebSocket, 3000);
+                };
+            } catch(e) {
+                console.error("WS error", e);
+            }
+        }
+
+        function handleSearch() { renderWatchlist(); }
+        function clearSearch() {
+            document.getElementById('symbolSearchInput').value = '';
+            renderWatchlist();
+        }
+
+        function toggleServerSettings() {
+            document.getElementById('serverModal').classList.toggle('hidden');
+        }
+
+        function saveServerAddress() {
+            const val = document.getElementById('wsServerInput').value.trim();
+            localStorage.setItem('hn_ws_url', val);
+            toggleServerSettings();
+            if (socket) socket.close();
+            connectLiveWebSocket();
+        }
+
+        function copyTradePlan() {
+            const text = `🎯 HARRY-NIFTY TRADE PLAN\nContract: ${document.getElementById('recContract').innerText}\nEntry: ${document.getElementById('recEntry').innerText}\nSL: ${document.getElementById('recSL').innerText}\nTarget: ${document.getElementById('recTarget').innerText}`;
+            navigator.clipboard.writeText(text);
+            alert("Trade Plan Copied to Clipboard!");
+        }
+
+        window.onload = () => {
+            selectSymbol('NIFTY');
+            renderWatchlist();
+            connectLiveWebSocket();
+        };
+    </script>
+</body>
+</html>
