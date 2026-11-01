@@ -3,48 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>harry-nifty - Live Paytm Terminal</title>
+    <title>harry-nifty - Ultimate Pro Trading Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: #1c2536; border-radius: 2px; }
         .segment-btn.active { border-bottom: 2px solid #06b6d4; color: #06b6d4; font-weight: bold; background: rgba(6, 182, 212, 0.08); }
+        .tab-btn.active { border-bottom: 2px solid #06b6d4; color: #06b6d4; font-weight: bold; }
     </style>
 </head>
 <body class="bg-[#080b11] text-slate-100 min-h-screen flex flex-col antialiased select-none">
 
-    <!-- Header Navigation -->
-    <header class="bg-[#111723] border-b border-[#1c2536] px-3 py-2.5 sticky top-0 z-40 flex items-center justify-between shadow-md">
+    <!-- Top Sticky Header -->
+    <header class="bg-[#111723] border-b border-[#1c2536] px-3 py-2 sticky top-0 z-40 flex items-center justify-between gap-2 shadow-md">
         <div class="flex items-center gap-2">
-            <span class="w-8 h-8 rounded bg-cyan-950 border border-cyan-800 text-cyan-400 font-black flex items-center justify-center text-xs">HN</span>
+            <span class="w-7 h-7 rounded bg-cyan-950 border border-cyan-800 text-cyan-400 font-black flex items-center justify-center text-xs">HN</span>
             <div>
                 <div class="flex items-center gap-1.5">
-                    <h1 class="text-sm font-bold text-white tracking-wide">harry-nifty <span class="text-[10px] text-cyan-400 font-mono">LIVE</span></h1>
-                    <span id="liveStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-950 text-amber-400 border border-amber-800 font-mono">
-                        CONNECTING SERVER...
+                    <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">harry-nifty <span class="text-[10px] text-cyan-400 font-mono">PRO</span></h1>
+                    <span id="liveStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono">
+                        ● LIVE FEED ACTIVE
                     </span>
                 </div>
-                <p class="text-[9px] text-slate-400 font-mono flex items-center gap-1">
-                    Paytm Money API: <span class="text-cyan-400 font-bold">c43893b66...</span>
+                <p class="text-[9px] text-slate-400 font-mono">
+                    Backend: <span class="text-cyan-400 font-bold">harry-backend.onrender.com</span>
                 </p>
             </div>
         </div>
 
         <div class="flex items-center gap-2">
-            <button onclick="toggleServerSettings()" class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200">
+            <!-- Auto-Trading Mode Button -->
+            <button id="autoTradeBtn" onclick="toggleAutoTrading()" class="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 border border-slate-700 text-slate-300 transition">
+                <span id="autoTradeDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                <span id="autoTradeText">Auto-Trade: OFF</span>
+            </button>
+            <button onclick="toggleServerSettings()" class="px-2 py-1 text-xs font-semibold rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200">
                 ⚙️ Server URL
             </button>
         </div>
     </header>
 
-    <!-- Asset Summary Ribbon -->
+    <!-- Search Bar & Multi-Segment Tabs -->
+    <div class="p-2.5 bg-[#111723]/70 border-b border-[#1c2536] flex flex-wrap items-center justify-between gap-2">
+        <div class="relative flex-1 min-w-[200px]">
+            <input type="text" id="symbolSearchInput" oninput="handleSearch()" placeholder="🔍 Search any Index, Stock, Commodity, or ETF..." 
+                   class="w-full pl-3 pr-8 py-1.5 text-xs rounded-lg bg-[#080b11] border border-[#1c2536] text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono">
+            <button onclick="clearSearch()" class="absolute right-2.5 top-2 text-xs text-slate-500 hover:text-white">✕</button>
+        </div>
+
+        <div class="flex items-center gap-1 text-xs overflow-x-auto no-scrollbar py-0.5">
+            <button onclick="switchSegment('ALL')" id="seg-ALL" class="segment-btn active px-3 py-1 rounded border border-[#1c2536] text-slate-300">All</button>
+            <button onclick="switchSegment('FNO')" id="seg-FNO" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">⚡ F&O Options</button>
+            <button onclick="switchSegment('INTRADAY')" id="seg-INTRADAY" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">🎯 Intraday</button>
+            <button onclick="switchSegment('LONGTERM')" id="seg-LONGTERM" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">📈 Long-Term</button>
+            <button onclick="switchSegment('COMMODITY_ETF')" id="seg-COMMODITY_ETF" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">🪙 ETF & MCX</button>
+        </div>
+    </div>
+
+    <!-- Active Asset Summary Bar (Sensibull Style) -->
     <div class="p-3 bg-[#111723]/40 border-b border-[#1c2536] flex flex-wrap items-center justify-between gap-3">
         <div>
             <div class="flex items-center gap-2">
                 <span id="activeSymTitle" class="text-base font-bold text-white">NIFTY 50 (NSE)</span>
                 <span id="activeSignalBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40">STRONG BUY CE</span>
+                <span id="activeSegmentTag" class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">F&O INDEX</span>
             </div>
             <div class="text-[10px] text-slate-400 font-mono mt-0.5 flex flex-wrap gap-x-3">
                 <span>LTP: <b id="valLTP" class="text-white">24,380.40</b></span>
@@ -53,6 +77,7 @@
             </div>
         </div>
 
+        <!-- Sensibull Core Levels -->
         <div class="grid grid-cols-3 gap-1.5 text-center font-mono text-xs">
             <div class="bg-[#080b11] px-2 py-1 rounded border border-[#1c2536]">
                 <div class="text-[9px] text-slate-400">Max Pain</div>
@@ -69,239 +94,21 @@
         </div>
     </div>
 
-    <!-- Main Workspace -->
+    <!-- Main Workspace Layout -->
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        <!-- Chart Pane -->
-        <div class="w-full lg:w-3/5 p-3 space-y-3 border-r border-[#1c2536] overflow-y-auto">
+        
+        <!-- Left Pane: Chart + Strike Recommender + Sensibull Chain -->
+        <div class="w-full lg:w-3/5 p-2.5 sm:p-3 overflow-y-auto space-y-3 border-r border-[#1c2536]">
+            <!-- Chart Container -->
             <div class="bg-[#111723] border border-[#1c2536] rounded-xl p-2.5 shadow">
                 <div class="flex justify-between items-center text-[11px] mb-1 px-1 font-mono">
                     <span class="text-slate-300 font-bold flex items-center gap-1.5">
-                        <span id="chartDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Live 5-Min Candlesticks
+                        <span class="w-2 h-2 rounded-full bg-[#00dc82] animate-pulse"></span> Live 5-Min Candlesticks
                     </span>
                     <span class="text-cyan-400 text-[10px]">― VWAP Line</span>
                 </div>
-                <div id="chartContainer" class="w-full h-[300px] rounded overflow-hidden bg-[#080b11]"></div>
+                <div id="chartContainer" class="w-full h-[280px] rounded overflow-hidden bg-[#080b11]"></div>
             </div>
 
-            <!-- Trade Recommendation Execution Card -->
-            <div class="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-800/60 shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-cyan-400">🎯 RECOMMENDED CONTRACT:</span>
-                        <span id="recContract" class="text-sm font-bold text-white font-mono">NIFTY 24400 CE</span>
-                    </div>
-                    <div class="text-xs text-slate-300 font-mono mt-1 flex flex-wrap gap-x-4">
-                        <span>Entry: <b id="recEntry" class="text-white">₹130 - ₹136</b></span>
-                        <span>SL: <b id="recSL" class="text-[#ff4365]">₹110</b></span>
-                        <span>Target: <b id="recTarget" class="text-[#00dc82]">₹175 / ₹210</b></span>
-                    </div>
-                </div>
-                <button onclick="copyTradePlan()" class="px-4 py-2 rounded bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs">
-                    📋 Copy Plan
-                </button>
-            </div>
-        </div>
-
-        <!-- Watchlist Pane -->
-        <div class="w-full lg:w-2/5 p-3 overflow-y-auto">
-            <div class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
-                <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] text-xs font-bold text-white">
-                    Live Watchlist (Tap to switch chart)
-                </div>
-                <table class="w-full text-left text-xs font-mono">
-                    <thead class="bg-[#1c2536]/60 text-slate-400 text-[10px]">
-                        <tr>
-                            <th class="p-2">Symbol</th>
-                            <th class="p-2 text-right">Live LTP (₹)</th>
-                            <th class="p-2 text-center">Signal</th>
-                            <th class="p-2 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="watchlistBody" class="divide-y divide-[#1c2536]/40">
-                        <!-- Rows injected via JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Server Settings Modal -->
-    <div id="serverModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-        <div class="bg-[#111723] border border-[#1c2536] rounded-xl w-full max-w-sm p-4 space-y-3 text-xs">
-            <div class="flex justify-between items-center font-bold text-white">
-                <span>Backend WebSocket Bridge</span>
-                <button onclick="toggleServerSettings()" class="text-slate-400">✕</button>
-            </div>
-            <p class="text-[11px] text-slate-400">Enter your live FastAPI server address (Local PC or Render URL):</p>
-            <input type="text" id="wsServerInput" value="ws://127.0.0.1:8000/ws/live" class="w-full p-2 rounded bg-[#080b11] border border-[#1c2536] text-white font-mono">
-            <button onclick="saveServerAddress()" class="w-full py-2 rounded bg-cyan-500 font-bold text-black">Connect Live Feed</button>
-        </div>
-    </div>
-
-    <script>
-        let currentSymbol = 'NIFTY';
-        let chartInstance = null;
-        let candleSeries = null;
-        let vwapSeries = null;
-        let socket = null;
-
-        const ASSETS = {
-            'NIFTY': { name: 'Nifty 50 Index', step: 50, ltp: 24380.40, vwap: 24320.00, pcr: 1.24 },
-            'BANKNIFTY': { name: 'Nifty Bank Index', step: 100, ltp: 51840.10, vwap: 51950.00, pcr: 0.86 },
-            'SENSEX': { name: 'BSE Sensex Index', step: 100, ltp: 80120.50, vwap: 79950.00, pcr: 1.30 },
-            'FINNIFTY': { name: 'Nifty Financial Services', step: 50, ltp: 23910.80, vwap: 23890.00, pcr: 1.08 },
-            'RELIANCE': { name: 'Reliance Industries', step: 20, ltp: 2890.50, vwap: 2872.00, pcr: 1.31 },
-            'HDFCBANK': { name: 'HDFC Bank Ltd', step: 10, ltp: 1682.20, vwap: 1690.00, pcr: 0.82 }
-        };
-
-        function initChart(asset) {
-            const container = document.getElementById('chartContainer');
-            container.innerHTML = '';
-            chartInstance = LightweightCharts.createChart(container, {
-                width: container.clientWidth || 360,
-                height: 300,
-                layout: { background: { color: '#080b11' }, textColor: '#94a3b8' },
-                grid: { vertLines: { color: '#141c2a' }, horzLines: { color: '#141c2a' } },
-                timeScale: { borderColor: '#1c2536', timeVisible: true }
-            });
-
-            candleSeries = chartInstance.addCandlestickSeries({
-                upColor: '#00dc82', downColor: '#ff4365', borderVisible: false,
-                wickUpColor: '#00dc82', wickDownColor: '#ff4365'
-            });
-
-            vwapSeries = chartInstance.addLineSeries({ color: '#06b6d4', lineWidth: 2, title: 'VWAP' });
-
-            const candleData = [];
-            const vwapData = [];
-            let t = Math.floor(Date.now() / 1000) - (45 * 300);
-            let p = asset.vwap * 0.995;
-
-            for (let i = 0; i < 45; i++) {
-                let open = p;
-                let close = open + (Math.sin(i * 0.4) * (asset.ltp * 0.0016));
-                let high = Math.max(open, close) + 4;
-                let low = Math.min(open, close) - 4;
-                candleData.push({ time: t, open, high, low, close });
-                vwapData.push({ time: t, value: asset.vwap });
-                p = close;
-                t += 300;
-            }
-            candleData[candleData.length - 1].close = asset.ltp;
-            candleSeries.setData(candleData);
-            vwapSeries.setData(vwapData);
-        }
-
-        // Live WebSocket Connector
-        function connectLiveWebSocket() {
-            const serverUrl = localStorage.getItem('hn_ws_url') || 'ws://127.0.0.1:8000/ws/live';
-            const badge = document.getElementById('liveStatusBadge');
-
-            try {
-                socket = new WebSocket(serverUrl);
-                socket.onopen = () => {
-                    badge.innerText = "● LIVE FEED ACTIVE";
-                    badge.className = "text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono";
-                };
-
-                socket.onmessage = (event) => {
-                    const msg = JSON.parse(event.data);
-                    if (msg.type === "TICK_UPDATE" && msg.data) {
-                        Object.keys(msg.data).forEach(sym => {
-                            if (ASSETS[sym]) {
-                                ASSETS[sym].ltp = msg.data[sym].ltp;
-                                ASSETS[sym].vwap = msg.data[sym].vwap;
-                            }
-                        });
-                        updateUI();
-                    }
-                };
-
-                socket.onclose = () => {
-                    badge.innerText = "OFFLINE (RECONNECTING...)";
-                    badge.className = "text-[9px] px-1.5 py-0.2 rounded-full bg-rose-950 text-[#ff4365] border border-rose-800 font-mono";
-                    setTimeout(connectLiveWebSocket, 3000);
-                };
-            } catch(e) {
-                console.error("WS error", e);
-            }
-        }
-
-        function updateUI() {
-            const asset = ASSETS[currentSymbol];
-            if (!asset) return;
-
-            document.getElementById('valLTP').innerText = asset.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
-            document.getElementById('valVWAP').innerText = asset.vwap.toFixed(2);
-            document.getElementById('valPCR').innerText = asset.pcr.toFixed(2);
-
-            const atm = Math.round(asset.ltp / asset.step) * asset.step;
-            document.getElementById('valMaxPain').innerText = atm;
-            document.getElementById('valSupport').innerText = (atm - asset.step * 2);
-            document.getElementById('valResistance').innerText = (atm + asset.step * 2);
-
-            const isBull = asset.ltp >= asset.vwap;
-            document.getElementById('recContract').innerText = `${currentSymbol} ${atm} ${isBull ? 'CE' : 'PE'}`;
-            document.getElementById('activeSignalBadge').innerText = isBull ? 'STRONG BUY CE' : 'STRONG BUY PE';
-            document.getElementById('activeSignalBadge').className = isBull 
-                ? "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40"
-                : "text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950 text-[#ff4365] border border-[#ff4365]/40";
-
-            renderWatchlist();
-        }
-
-        function renderWatchlist() {
-            const tbody = document.getElementById('watchlistBody');
-            tbody.innerHTML = '';
-            Object.keys(ASSETS).forEach(sym => {
-                const item = ASSETS[sym];
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-[#1c2536]/40 cursor-pointer";
-                tr.innerHTML = `
-                    <td class="p-2 font-bold text-white">${sym}</td>
-                    <td class="p-2 text-right font-bold ${item.ltp >= item.vwap ? 'text-[#00dc82]' : 'text-[#ff4365]'}">
-                        ₹${item.ltp.toFixed(2)}
-                    </td>
-                    <td class="p-2 text-center text-[10px] ${item.ltp >= item.vwap ? 'text-[#00dc82]' : 'text-[#ff4365]'}">
-                        ${item.ltp >= item.vwap ? 'BUY' : 'SELL'}
-                    </td>
-                    <td class="p-2 text-center">
-                        <button onclick="selectSymbol('${sym}')" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 text-[10px]">Chart</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function selectSymbol(sym) {
-            currentSymbol = sym;
-            document.getElementById('activeSymTitle').innerText = `${sym} (${ASSETS[sym].name})`;
-            initChart(ASSETS[sym]);
-            updateUI();
-        }
-
-        function toggleServerSettings() {
-            document.getElementById('serverModal').classList.toggle('hidden');
-        }
-
-        function saveServerAddress() {
-            const val = document.getElementById('wsServerInput').value.trim();
-            localStorage.setItem('hn_ws_url', val);
-            toggleServerSettings();
-            if (socket) socket.close();
-            connectLiveWebSocket();
-        }
-
-        function copyTradePlan() {
-            const text = `🎯 HARRY-NIFTY LIVE PLAN\nContract: ${document.getElementById('recContract').innerText}\nLTP: ${document.getElementById('valLTP').innerText}\nVWAP: ${document.getElementById('valVWAP').innerText}`;
-            navigator.clipboard.writeText(text);
-            alert("Plan Copied!");
-        }
-
-        window.onload = () => {
-            selectSymbol('NIFTY');
-            connectLiveWebSocket();
-        };
-    </script>
-</body>
-</html>
+            <!-- Trade Execution & Recommendation Card -->
+            <div class="p-3.5 rounded-xl bg-
