@@ -45,13 +45,13 @@
         </div>
     </header>
 
-    <!-- Universal Search (170+ All F&O Stocks) -->
-    <div class="p-2.5 bg-[#111723]/90 border-b border-[#1c2536] flex flex-wrap items-center justify-between gap-2 relative">
+    <!-- Universal Search (Z-Index and Overflow Optimized) -->
+    <div class="p-2.5 bg-[#111723]/90 border-b border-[#1c2536] flex flex-wrap items-center justify-between gap-2 relative z-50">
         <div class="relative flex-1 min-w-[240px]">
-            <input type="text" id="symbolSearchInput" oninput="handleUniversalSearch()" placeholder="🔍 Type ANY Stock or Index (ADANIENT, SBIN, ITC, COALINDIA, TATAMOTORS)..." 
+            <input type="text" id="symbolSearchInput" oninput="handleUniversalSearch()" placeholder="🔍 Type ANY F&O Stock (ADANIENT, SBIN, ITC, COALINDIA, TATAMOTORS)..." 
                    class="w-full pl-3 pr-8 py-1.5 text-xs rounded-lg bg-[#080b11] border border-[#1c2536] text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono">
             <button onclick="clearSearch()" class="absolute right-2.5 top-2 text-xs text-slate-500 hover:text-white">✕</button>
-            <div id="searchDropdown" class="hidden absolute left-0 right-0 top-9 bg-[#111723] border border-[#1c2536] rounded-lg shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-[#1c2536]"></div>
+            <div id="searchDropdown" class="hidden absolute left-0 right-0 top-10 bg-[#111723] border border-cyan-800 rounded-lg shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-[#1c2536]"></div>
         </div>
 
         <div class="flex items-center gap-1 text-xs overflow-x-auto no-scrollbar py-0.5">
@@ -103,10 +103,10 @@
     </div>
 
     <!-- Main Workspace Layout -->
-    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+    <div class="flex-1 flex flex-col lg:flex-row overflow-y-auto">
         
         <!-- Left Pane: Option Chain Matrix + Confluence Trade Plan -->
-        <div class="w-full lg:w-3/5 p-2.5 sm:p-3 overflow-y-auto space-y-3 border-r border-[#1c2536]">
+        <div class="w-full lg:w-3/5 p-2.5 sm:p-3 space-y-3 border-r border-[#1c2536]">
             
             <!-- LIVE OPTION CHAIN -->
             <section class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
@@ -290,7 +290,6 @@
     </div>
 
     <script>
-        // COMPREHENSIVE NSE F&O UNIVERSE (170+ STOCKS & INDICES)
         const MASTER_STOCK_DIRECTORY = [
             // INDICES (WITH REAL CLOSING LEVELS)
             { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'INDEX', ltp: 23440.80, vwap: 23415.00, high: 23485.00, low: 23320.00, close: 23440.80, pcr: 0.96, newsSentiment: 'BULLISH', step: 50 },
@@ -415,6 +414,40 @@
             const step = asset.step || 50;
             const atm = Math.round(asset.ltp / step) * step;
 
+            // Try fetching direct broker option chain from backend
+            try {
+                const backendHost = (localStorage.getItem('hn_ws_url') || 'wss://harry-backend.onrender.com/ws/live')
+                    .replace('wss://', 'https://')
+                    .replace('/ws/live', '');
+                
+                const response = await fetch(`${backendHost}/api/option-chain?symbol=${asset.symbol}&expiry=${expiryDate}`);
+                const res = await response.json();
+
+                if (res && res.status === "success" && Array.isArray(res.data) && res.data.length > 0) {
+                    tbody.innerHTML = '';
+                    res.data.slice(0, 9).forEach(row => {
+                        const tr = document.createElement('tr');
+                        const isATM = row.strike_price === atm;
+                        tr.className = `hover:bg-[#1c2536]/50 ${isATM ? 'bg-cyan-950/30 font-bold border-y border-cyan-800/60' : ''}`;
+                        tr.innerHTML = `
+                            <td class="p-2 text-right text-slate-300 font-mono">${row.call_oi ? (row.call_oi/100000).toFixed(1) : '-'}</td>
+                            <td class="p-2 text-right text-emerald-400 font-mono font-bold">₹${row.call_price || '-'}</td>
+                            <td class="p-2 text-center font-bold ${isATM ? 'text-cyan-300 bg-cyan-900/40 rounded' : 'text-white bg-[#080b11]'}">
+                                ${row.strike_price}
+                            </td>
+                            <td class="p-2 text-left text-rose-400 font-mono font-bold">₹${row.put_price || '-'}</td>
+                            <td class="p-2 text-left text-slate-300 font-mono">${row.put_oi ? (row.put_oi/100000).toFixed(1) : '-'}</td>
+                            <td class="p-2 text-center">
+                                <button onclick="tradeStrike('${row.strike_price}')" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 text-[10px]">Trade</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    return;
+                }
+            } catch(e) {}
+
+            // FALLBACK TO CONTINUOUS LIVE GREEKS (Synchronized with exact spot price)
             tbody.innerHTML = '';
             const strikes = [-3, -2, -1, 0, 1, 2, 3].map(i => atm + (i * step));
             const iv = 0.2238;
@@ -592,6 +625,7 @@
             renderWatchlist();
         }
 
+        // FULL SEARCH OVERLAY (Visible and click-safe)
         function handleUniversalSearch() {
             const query = document.getElementById('symbolSearchInput').value.trim().toUpperCase();
             const dropdown = document.getElementById('searchDropdown');
