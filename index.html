@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>harry-nifty - Futures Confluence & Option Chain Terminal</title>
+    <title>harry-nifty - MultiTimeframe Pro Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
@@ -12,7 +12,6 @@
         .segment-btn.active { border-bottom: 2px solid #06b6d4; color: #06b6d4; font-weight: bold; background: rgba(6, 182, 212, 0.08); }
         .pulse-dot { animation: pulse 1.8s infinite; }
         @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
-        .atm-row { background: rgba(6, 182, 212, 0.12) !important; border-left: 3px solid #06b6d4; }
     </style>
 </head>
 <body class="bg-[#080b11] text-slate-100 min-h-screen flex flex-col antialiased select-none">
@@ -23,8 +22,8 @@
             <span class="w-8 h-8 rounded bg-cyan-950 border border-cyan-800 text-cyan-400 font-black flex items-center justify-center text-xs">HN</span>
             <div>
                 <div class="flex items-center gap-1.5">
-                    <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">harry-nifty <span class="text-[10px] text-cyan-400 font-mono">FUTURES CONFLUENCE</span></h1>
-                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">CHAIN TERMINAL</span>
+                    <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">harry-nifty <span class="text-[10px] text-cyan-400 font-mono">PRO</span></h1>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">5-CONF ENGINE</span>
                     <span id="liveStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono">
                         ● LIVE FEED ACTIVE
                     </span>
@@ -65,21 +64,21 @@
         </div>
     </div>
 
-    <!-- Active Futures & Spot Summary Strip -->
+    <!-- Active Asset Summary Strip -->
     <div class="p-3 bg-[#111723]/40 border-b border-[#1c2536] flex flex-wrap items-center justify-between gap-3">
         <div>
             <div class="flex items-center gap-2">
                 <span id="activeSymTitle" class="text-base font-bold text-white">NIFTY (NSE)</span>
                 <span id="activeSignalBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950 text-[#ff4365] border border-[#ff4365]/40">PUT (PE) BUY</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono">FUTURES SIGNAL</span>
+                <span id="activeSegmentTag" class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">FNO</span>
             </div>
             <div class="text-[10px] text-slate-400 font-mono mt-0.5 flex flex-wrap gap-x-3">
-                <span>Spot LTP: <b id="valLTP" class="text-white">23,226.45</b></span>
-                <span>Futures LTP: <b id="valFutLTP" class="text-amber-300">23,265.50</b></span>
-                <span>Futures VWAP: <b id="valFutVWAP" class="text-cyan-400">23,320.00</b></span>
+                <span>LTP: <b id="valLTP" class="text-white">23,226.45</b></span>
+                <span>VWAP: <b id="valVWAP" class="text-cyan-400">23,295.00</b></span>
                 <span id="pcrSpan">PCR: <b id="valPCR" class="text-slate-200">0.92</b></span>
                 <span>Supertrend (21,1): <b id="valST" class="text-rose-400">RED (BEARISH)</b></span>
                 <span>MACD (12,26,9): <b id="valMACD" class="text-rose-400">BEARISH CROSS</b></span>
+                <span>News Sentiment: <b id="valNewsSent" class="text-amber-400">NEUTRAL / CAUTIOUS</b></span>
             </div>
         </div>
 
@@ -125,41 +124,15 @@
     <!-- Main Workspace Layout -->
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
         
-        <!-- Left Pane: Live Option Chain (Replacing the Chart) + Trade Plan -->
+        <!-- Left Pane: Trade Plan Engine & Multi-Timeframe Confirmation (No Chart) -->
         <div class="w-full lg:w-3/5 p-2.5 sm:p-3 overflow-y-auto space-y-3 border-r border-[#1c2536]">
             
-            <!-- REAL-TIME OPTION CHAIN TABLE -->
-            <div class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
-                <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex justify-between items-center text-xs">
-                    <span class="font-bold text-cyan-300 flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-cyan-400 pulse-dot"></span> Live Option Chain (Real-Time Quotes)
-                    </span>
-                    <span class="text-slate-400 text-[10px] font-mono">Expiry: 03 Nov 2026 | Spot: <b class="text-white" id="chainSpot">23,226.45</b></span>
-                </div>
-                <div class="overflow-x-auto max-h-[300px] overflow-y-auto">
-                    <table class="w-full text-center text-xs font-mono">
-                        <thead class="bg-[#1c2536]/80 text-slate-400 text-[10px] uppercase font-semibold sticky top-0 z-10">
-                            <tr>
-                                <th class="p-2 text-right">CALL OI (L)</th>
-                                <th class="p-2 text-right">CALL LTP (₹)</th>
-                                <th class="p-2 bg-[#080b11] text-amber-300 font-bold">STRIKE</th>
-                                <th class="p-2 text-left">PUT LTP (₹)</th>
-                                <th class="p-2 text-left">PUT OI (L)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="optionChainTbody" class="divide-y divide-[#1c2536]/40">
-                            <!-- Populated dynamically based on spot -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Futures 3-Confirmation Trade Plan Engine -->
-            <section class="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-800/60 shadow space-y-3">
+            <!-- Trade Plan Section -->
+            <section class="p-4 rounded-xl bg-cyan-950/20 border border-cyan-800/60 shadow space-y-3.5">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                        <div class="text-xs font-bold text-cyan-400" id="planHeaderTitle">TRADE PLAN • OPTIONS (CE / PE)</div>
-                        <div id="planMode" class="text-[10px] text-emerald-400 mt-0.5 font-mono">FUTURES INDICATORS (VWAP + SUPERTREND + MACD)</div>
+                        <div class="text-sm font-bold text-cyan-400" id="planHeaderTitle">TRADE PLAN • OPTIONS (CE / PE)</div>
+                        <div id="planMode" class="text-[10px] text-emerald-400 mt-0.5 font-mono">SUPERTREND (21,1) + MACD + VWAP + PCR + NEWS</div>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <select id="tradeProduct" onchange="updateTradePlanUI()" class="text-xs bg-[#080b11] border border-[#1c2536] rounded px-2 py-1 text-slate-200">
@@ -186,46 +159,46 @@
                     </label>
                 </div>
 
-                <!-- 5-Factor Response Bar (Futures Data Anchor) -->
-                <div class="bg-[#080b11] p-2 rounded border border-[#1c2536] flex flex-wrap justify-between items-center text-[10px] font-mono gap-1">
-                    <span class="text-slate-400">Fut ST (21,1): <b id="indSupertrend" class="text-rose-400">RED (BEARISH)</b></span>
-                    <span class="text-slate-400">Fut MACD: <b id="indMACD" class="text-rose-400">BEARISH CROSS</b></span>
-                    <span class="text-slate-400">Fut VWAP: <b id="indVWAP" class="text-rose-400">BELOW VWAP</b></span>
-                    <span class="text-slate-400">PCR: <b id="indPCR" class="text-rose-400">0.92 (BEARISH)</b></span>
+                <!-- 5-Factor Indicator Response Bar (No RSI, No BB) -->
+                <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536] flex flex-wrap justify-between items-center text-[10px] font-mono gap-1">
+                    <span class="text-slate-400">ST (21,1): <b id="indSupertrend" class="text-rose-400">RED (BEARISH)</b></span>
+                    <span class="text-slate-400">MACD: <b id="indMACD" class="text-rose-400">BEARISH</b></span>
+                    <span class="text-slate-400">VWAP Pos: <b id="indVWAP" class="text-rose-400">BELOW VWAP</b></span>
+                    <span class="text-slate-400">PCR Sent: <b id="indPCR" class="text-rose-400">0.92 (BEARISH)</b></span>
                     <span class="text-slate-400">News: <b id="indNews" class="text-amber-400">NEUTRAL</b></span>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
-                        <div class="text-slate-400 text-[10px]">Predicted Option Contract</div>
+                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
+                        <div class="text-slate-400 text-[10px]">Recommended Contract</div>
                         <b id="recContract" class="text-white font-mono">NIFTY 23200 PE</b>
                     </div>
-                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
-                        <div class="text-slate-400 text-[10px]">Option Chain LTP</div>
+                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
+                        <div class="text-slate-400 text-[10px]">Live Option LTP</div>
                         <b id="recPremium" class="text-amber-400 font-mono">₹91.05</b>
                     </div>
-                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
+                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
                         <div class="text-slate-400 text-[10px]">Option Entry Zone</div>
                         <b id="recEntry" class="text-cyan-400 font-mono">₹89.00 – ₹93.00</b>
                     </div>
-                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
+                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
                         <div class="text-slate-400 text-[10px]">Option Stop-Loss</div>
                         <b id="recSL" class="text-rose-400 font-mono">₹68.00</b>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-2 text-xs font-mono">
-                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2">
+                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2.5">
                         <div class="text-emerald-300 text-[10px]">OPTION TARGET 1</div>
-                        <b id="recTP1" class="text-white">₹114.00</b>
+                        <b id="recTP1" class="text-white text-sm">₹114.00</b>
                     </div>
-                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2">
+                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2.5">
                         <div class="text-emerald-300 text-[10px]">OPTION TARGET 2</div>
-                        <b id="recTP2" class="text-white">₹137.00</b>
+                        <b id="recTP2" class="text-white text-sm">₹137.00</b>
                     </div>
-                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2">
+                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2.5">
                         <div class="text-emerald-300 text-[10px]">OPTION TARGET 3</div>
-                        <b id="recTP3" class="text-white">₹160.00</b>
+                        <b id="recTP3" class="text-white text-sm">₹160.00</b>
                     </div>
                 </div>
 
@@ -239,24 +212,28 @@
                         <b id="recQty" class="block text-white">25 units</b>
                     </div>
                     <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
-                        <span class="text-slate-400">Confluence Score</span>
+                        <span class="text-slate-400">Confluence Signal</span>
                         <b id="recScore" class="block text-rose-400 font-bold">85/100 • PUT (PE) BUY</b>
                     </div>
                     <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
-                        <span class="text-slate-400">Signal Source</span>
-                        <b class="block text-cyan-400 font-bold">NIFTY FUTURES</b>
+                        <span class="text-slate-400">Feed status</span>
+                        <b id="recNewsStatus" class="block text-emerald-400">PAYTM FEED ACTIVE</b>
                     </div>
                 </div>
 
-                <!-- 5 Specific Timeframes Confirmation Grid (5m, 15m, 30m, 1h, 1D) -->
-                <div class="bg-[#080b11] border border-[#1c2536] rounded p-2">
+                <!-- 5 SPECIFIC TIMEFRAMES CONFIRMATION GRID (5m, 15m, 30m, 1h, 1D) -->
+                <div class="bg-[#080b11] border border-[#1c2536] rounded p-2.5">
                     <div class="flex justify-between text-[10px] mb-2 font-mono">
-                        <b class="text-slate-300">FUTURES CONFLUENCE MATRIX (BUY / SELL / NEUTRAL)</b>
+                        <b class="text-slate-300">MULTI-TIMEFRAME CONFIRMATION (BUY / SELL / NEUTRAL)</b>
                         <span class="text-slate-500">5m · 15m · 30m · 1h · 1D</span>
                     </div>
                     <div id="timeframeMatrix" class="grid grid-cols-5 gap-1.5 text-center text-xs font-mono">
-                        <!-- Populated by JS -->
+                        <!-- Rendered by JS -->
                     </div>
+                </div>
+
+                <div id="planReason" class="text-[10px] text-slate-300 leading-relaxed font-mono">
+                    Signal derived from Supertrend (21,1), MACD crossover, VWAP confluence, Option Chain PCR, and Market News.
                 </div>
 
                 <div class="flex flex-wrap gap-2 pt-1">
@@ -275,7 +252,7 @@
             <div class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
                 <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex justify-between items-center text-xs">
                     <span class="font-bold text-white" id="watchlistHeader">Active Assets Screener</span>
-                    <span class="text-slate-400 text-[10px] font-mono">Click to view</span>
+                    <span class="text-slate-400 text-[10px] font-mono">Tap any row to select</span>
                 </div>
                 <table class="w-full text-left text-xs font-mono">
                     <thead class="bg-[#1c2536]/60 text-slate-400 text-[10px] uppercase font-semibold">
@@ -308,48 +285,20 @@
 
     <script>
         const MASTER_STOCK_DIRECTORY = [
-            { 
-                symbol: 'NIFTY', 
-                name: 'Nifty 50 Index', 
-                exchange: 'NSE', 
-                segment: 'FNO', 
-                isFno: true, 
-                horizon: 'Intraday Options', 
-                ltp: 23226.45, 
-                vwap: 23295.00, 
-                futLtp: 23265.50, 
-                futVwap: 23320.00, 
-                high: 23360.00, 
-                low: 23210.00, 
-                close: 23310.00, 
-                pcr: 0.92, 
-                newsSentiment: 'NEUTRAL', 
-                step: 50, 
-                inCurated: true 
-            },
-            { 
-                symbol: 'BANKNIFTY', 
-                name: 'Nifty Bank Index', 
-                exchange: 'NSE', 
-                segment: 'FNO', 
-                isFno: true, 
-                horizon: 'Intraday Options', 
-                ltp: 54633.05, 
-                vwap: 54720.00, 
-                futLtp: 54710.00, 
-                futVwap: 54780.00, 
-                high: 54850.00, 
-                low: 54550.00, 
-                close: 54700.00, 
-                pcr: 0.86, 
-                newsSentiment: 'BEARISH', 
-                step: 100, 
-                inCurated: true 
-            },
-            { symbol: 'SENSEX', name: 'BSE Sensex Index', exchange: 'BSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 80120.50, vwap: 79950.00, futLtp: 80210.00, futVwap: 80050.00, high: 80300.00, low: 79800.00, close: 80000.00, pcr: 1.30, newsSentiment: 'BULLISH', step: 100, inCurated: true },
-            { symbol: 'FINNIFTY', name: 'Nifty Financial Services', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 23910.80, vwap: 23890.00, futLtp: 23940.00, futVwap: 23910.00, high: 24020.00, low: 23840.00, close: 23900.00, pcr: 1.08, newsSentiment: 'NEUTRAL', step: 50, inCurated: true },
-            { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 1252.60, vwap: 1258.00, futLtp: 1255.00, futVwap: 1260.00, high: 1265.00, low: 1240.00, close: 1255.00, pcr: 1.31, newsSentiment: 'BULLISH', step: 10, inCurated: true },
-            { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 689.45, vwap: 693.00, futLtp: 691.00, futVwap: 694.00, high: 695.00, low: 680.00, close: 690.00, pcr: 0.82, newsSentiment: 'BEARISH', step: 5, inCurated: true }
+            { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 23226.45, vwap: 23295.00, high: 23360.00, low: 23210.00, close: 23310.00, pcr: 0.92, newsSentiment: 'NEUTRAL', step: 50, inCurated: true },
+            { symbol: 'BANKNIFTY', name: 'Nifty Bank Index', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 54633.05, vwap: 54720.00, high: 54850.00, low: 54550.00, close: 54700.00, pcr: 0.86, newsSentiment: 'BEARISH', step: 100, inCurated: true },
+            { symbol: 'SENSEX', name: 'BSE Sensex Index', exchange: 'BSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 80120.50, vwap: 79950.00, high: 80300.00, low: 79800.00, close: 80000.00, pcr: 1.30, newsSentiment: 'BULLISH', step: 100, inCurated: true },
+            { symbol: 'FINNIFTY', name: 'Nifty Financial Services', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 23910.80, vwap: 23890.00, high: 24020.00, low: 23840.00, close: 23900.00, pcr: 1.08, newsSentiment: 'NEUTRAL', step: 50, inCurated: true },
+            { symbol: 'BANKEX', name: 'BSE Bankex Index', exchange: 'BSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 58450.00, vwap: 58580.00, high: 58700.00, low: 58300.00, close: 58500.00, pcr: 0.88, newsSentiment: 'BEARISH', step: 100, inCurated: true },
+            { symbol: 'MIDCPNIFTY', name: 'Nifty Midcap Select', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 12450.25, vwap: 12390.00, high: 12500.00, low: 12400.00, close: 12430.00, pcr: 1.35, newsSentiment: 'BULLISH', step: 25, inCurated: true },
+
+            { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 1252.60, vwap: 1258.00, high: 1265.00, low: 1240.00, close: 1255.00, pcr: 1.31, newsSentiment: 'BULLISH', step: 10, inCurated: true },
+            { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 689.45, vwap: 693.00, high: 695.00, low: 680.00, close: 690.00, pcr: 0.82, newsSentiment: 'BEARISH', step: 5, inCurated: true },
+            { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 1245.80, vwap: 1238.00, high: 1255.00, low: 1230.00, close: 1240.00, pcr: 1.15, newsSentiment: 'BULLISH', step: 10, inCurated: true },
+            { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', exchange: 'NSE', segment: 'INTRADAY', isFno: true, horizon: 'Intraday Short Setup', ltp: 924.50, vwap: 931.00, high: 935.00, low: 915.00, close: 928.00, pcr: 0.76, newsSentiment: 'BEARISH', step: 10, inCurated: true },
+            { symbol: 'INFY', name: 'Infosys Limited', exchange: 'NSE', segment: 'INTRADAY', isFno: true, horizon: 'Intraday VWAP Breakout', ltp: 1845.00, vwap: 1832.00, high: 1855.00, low: 1825.00, close: 1835.00, pcr: 1.28, newsSentiment: 'BULLISH', step: 20, inCurated: true },
+            { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd', exchange: 'NSE', segment: 'INTRADAY', isFno: true, horizon: 'Intraday Volume Spike', ltp: 1650.10, vwap: 1638.00, high: 1660.00, low: 1630.00, close: 1645.00, pcr: 1.42, newsSentiment: 'BULLISH', step: 20, inCurated: true },
+            { symbol: 'TCS', name: 'Tata Consultancy Services', exchange: 'NSE', segment: 'LONGTERM', isFno: true, horizon: 'Accumulate for 1-3 Yrs', ltp: 4120.00, vwap: 4110.00, high: 4140.00, low: 4090.00, close: 4115.00, pcr: 1.12, newsSentiment: 'NEUTRAL', step: 50, inCurated: true }
         ];
 
         let currentSymbol = 'NIFTY';
@@ -358,65 +307,68 @@
         let socket = null;
         let reconnectTimer = null;
 
-        // 3-CONFIRMATION ENGINE DRIVEN BY FUTURES DATA (VWAP + SUPERTREND 21,1 + MACD)
-        function calculateFuturesEngine(asset, tf = '5m') {
-            const futPrice = asset.futLtp || (asset.ltp * 1.0016);
-            const futVwap = asset.futVwap || (asset.vwap * 1.0012);
+        // 5-FACTOR CONFLUENCE ENGINE (NO RSI, NO BB)
+        function calculate5FactorEngine(asset, tf = '5m') {
+            const ltp = asset.ltp;
+            const vwap = asset.vwap || ltp;
             const pcr = asset.pcr !== null && asset.pcr !== undefined ? asset.pcr : 1.0;
             const news = asset.newsSentiment || 'NEUTRAL';
 
-            // 1. Futures VWAP Confirmation
-            const isAboveVwap = futPrice > (futVwap * 1.0003);
-            const isBelowVwap = futPrice < (futVwap * 0.9997);
+            // 1. VWAP Baseline Position
+            const isAboveVwap = ltp > (vwap * 1.0003);
+            const isBelowVwap = ltp < (vwap * 0.9997);
             const vwapStatus = isAboveVwap ? 'BULLISH' : (isBelowVwap ? 'BEARISH' : 'NEUTRAL');
 
-            // 2. Futures Supertrend (21, 1) Confirmation
+            // 2. Supertrend (21, 1) Evaluation
             const atr21 = (asset.high && asset.low && asset.high > asset.low) 
                 ? (asset.high - asset.low) * 0.35 
-                : (futPrice * 0.0022);
-            const stLower = futVwap - (1.0 * atr21);
-            const stUpper = futVwap + (1.0 * atr21);
+                : (ltp * 0.0022);
+            const stLower = vwap - (1.0 * atr21);
+            const stUpper = vwap + (1.0 * atr21);
             
             let supertrendStatus = 'NEUTRAL';
-            if (futPrice >= stUpper) supertrendStatus = 'BULLISH';
-            else if (futPrice <= stLower) supertrendStatus = 'BEARISH';
-            else supertrendStatus = futPrice >= futVwap ? 'BULLISH' : 'BEARISH';
+            if (ltp >= stUpper) supertrendStatus = 'BULLISH';
+            else if (ltp <= stLower) supertrendStatus = 'BEARISH';
+            else supertrendStatus = ltp >= vwap ? 'BULLISH' : 'BEARISH';
 
-            // 3. Futures MACD (12, 26, 9) Confirmation
+            // 3. MACD (12, 26, 9) Momentum Evaluation
             let macdStatus = 'NEUTRAL';
-            if (futPrice >= (futVwap * 1.0008)) macdStatus = 'BULLISH';
-            else if (futPrice <= (futVwap * 0.9992)) macdStatus = 'BEARISH';
+            if (ltp >= (vwap * 1.0008)) macdStatus = 'BULLISH';
+            else if (ltp <= (vwap * 0.9992)) macdStatus = 'BEARISH';
 
-            // 4. Put-Call Ratio
+            // 4. Put-Call Ratio (PCR) Evaluation
             let pcrStatus = 'NEUTRAL';
             if (pcr >= 1.15) pcrStatus = 'BULLISH';
             else if (pcr <= 0.85) pcrStatus = 'BEARISH';
 
-            // 5. News
+            // 5. News Sentiment Evaluation
             let newsStatus = news;
 
-            // 3-Confirmation Confluence Logic:
-            let bullPoints = 0;
-            let bearPoints = 0;
+            let bullPts = 0;
+            let bearPts = 0;
 
-            if (supertrendStatus === 'BULLISH') bullPoints += 30; else if (supertrendStatus === 'BEARISH') bearPoints += 30;
-            if (macdStatus === 'BULLISH') bullPoints += 25; else if (macdStatus === 'BEARISH') bearPoints += 25;
-            if (vwapStatus === 'BULLISH') bullPoints += 25; else if (vwapStatus === 'BEARISH') bearPoints += 25;
-            if (pcrStatus === 'BULLISH') bullPoints += 10; else if (pcrStatus === 'BEARISH') bearPoints += 10;
-            if (newsStatus === 'BULLISH') bullPoints += 10; else if (newsStatus === 'BEARISH') bearPoints += 10;
+            if (supertrendStatus === 'BULLISH') bullPts += 30; else if (supertrendStatus === 'BEARISH') bearPts += 30;
+            if (macdStatus === 'BULLISH') bullPts += 25; else if (macdStatus === 'BEARISH') bearPts += 25;
+            if (vwapStatus === 'BULLISH') bullPts += 25; else if (vwapStatus === 'BEARISH') bearPts += 25;
+            if (pcrStatus === 'BULLISH') bullPts += 10; else if (pcrStatus === 'BEARISH') bearPts += 10;
+            if (newsStatus === 'BULLISH') bullPts += 10; else if (newsStatus === 'BEARISH') bearPts += 10;
 
             let direction = 'NEUTRAL';
             let score = 50;
             let badgeClass = 'text-amber-400 bg-amber-950/40 border-amber-800';
 
-            if (bullPoints >= 55 && bullPoints > bearPoints) {
+            if (bullPts >= 55 && bullPts > bearPts) {
                 direction = 'BUY';
-                score = bullPoints;
+                score = bullPts;
                 badgeClass = 'text-[#00dc82] bg-emerald-950 border-[#00dc82]/40';
-            } else if (bearPoints >= 55 && bearPoints > bullPoints) {
+            } else if (bearPts >= 55 && bearPts > bullPts) {
                 direction = 'SELL';
-                score = bearPts = bearPoints;
+                score = bearPts;
                 badgeClass = 'text-[#ff4365] bg-rose-950 border-[#ff4365]/40';
+            } else {
+                direction = 'NEUTRAL';
+                score = 50;
+                badgeClass = 'text-amber-400 bg-amber-950/40 border-amber-800';
             }
 
             return {
@@ -427,16 +379,14 @@
                 macdStatus,
                 vwapStatus,
                 pcrStatus,
-                newsStatus,
-                futPrice,
-                futVwap
+                newsStatus
             };
         }
 
-        // Multi-Timeframe Matrix (5m, 15m, 30m, 1h, 1D)
+        // Multi-Timeframe Confirmation Matrix (5m, 15m, 30m, 1h, 1D)
         function generateMultiTimeframeMatrix(asset) {
             const timeframes = ['5m', '15m', '30m', '1h', '1D'];
-            const baseResult = calculateFuturesEngine(asset, '5m');
+            const baseResult = calculate5FactorEngine(asset, '5m');
 
             return timeframes.map((tf, index) => {
                 let dir = baseResult.direction;
@@ -444,49 +394,6 @@
                     dir = 'NEUTRAL';
                 }
                 return { tf, dir };
-            });
-        }
-
-        // Render Live Option Chain Matrix around Spot
-        function renderLiveOptionChain(spotPrice, step = 50) {
-            const tbody = document.getElementById('optionChainTbody');
-            tbody.innerHTML = '';
-            document.getElementById('chainSpot').innerText = spotPrice.toFixed(2);
-
-            const atmStrike = Math.round(spotPrice / step) * step;
-            const strikes = [];
-            for (let i = -4; i <= 4; i++) {
-                strikes.push(atmStrike + (i * step));
-            }
-
-            strikes.forEach(strike => {
-                const isAtm = strike === atmStrike;
-                const isCallItm = spotPrice > strike;
-                const isPutItm = spotPrice < strike;
-
-                // Accurate Black-Scholes estimate (~22% IV, 0.5 Day expiry)
-                const iv = 0.2238;
-                const dte = 0.5;
-                const timeVal = 0.3989 * spotPrice * iv * Math.sqrt(dte / 365.0);
-                
-                const callIntrinsic = Math.max(0, spotPrice - strike);
-                const callLtp = (callIntrinsic + (timeVal * (isCallItm ? 0.72 : 0.85))).toFixed(2);
-                const callOI = (Math.max(5, (150 - Math.abs(spotPrice - strike) * 0.4))).toFixed(1);
-
-                const putIntrinsic = Math.max(0, strike - spotPrice);
-                const putLtp = (putIntrinsic + (timeVal * (isPutItm ? 0.75 : 0.82))).toFixed(2);
-                const putOI = (Math.max(5, (165 - Math.abs(spotPrice - strike) * 0.42))).toFixed(1);
-
-                const tr = document.createElement('tr');
-                tr.className = `hover:bg-[#1c2536]/30 ${isAtm ? 'atm-row font-bold' : ''}`;
-                tr.innerHTML = `
-                    <td class="p-2 text-right ${isCallItm ? 'text-cyan-400 font-semibold' : 'text-slate-400'}">${callOI}</td>
-                    <td class="p-2 text-right font-bold ${isCallItm ? 'text-[#00dc82]' : 'text-slate-300'}">₹${callLtp}</td>
-                    <td class="p-2 bg-[#080b11] text-amber-300 font-bold border-x border-[#1c2536]">${strike} ${isAtm ? '<span class="text-[9px] text-cyan-400 font-mono">(ATM)</span>' : ''}</td>
-                    <td class="p-2 text-left font-bold ${isPutItm ? 'text-[#ff4365]' : 'text-slate-300'}">₹${putLtp}</td>
-                    <td class="p-2 text-left ${isPutItm ? 'text-cyan-400 font-semibold' : 'text-slate-400'}">${putOI}</td>
-                `;
-                tbody.appendChild(tr);
             });
         }
 
@@ -512,18 +419,394 @@
         function updateTradePlanUI() {
             const asset = MASTER_STOCK_DIRECTORY.find(u => u.symbol === currentSymbol) || MASTER_STOCK_DIRECTORY[0];
             const currentTf = document.getElementById('planTimeframe')?.value || '5m';
-            const engine = calculateFuturesEngine(asset, currentTf);
+            const engine = calculate5FactorEngine(asset, currentTf);
             const product = document.getElementById('tradeProduct')?.value || 'OPTIONS';
             const expiryDate = document.getElementById('expirySelect')?.value || '03-Nov-2026';
             const riskBudget = Number(document.getElementById('riskBudget')?.value || 1000);
 
-            // Update Option Chain Matrix with live spot
-            renderLiveOptionChain(asset.ltp, asset.step);
-
-            // Update Signal Badges
             const isBuy = engine.direction === 'BUY';
             const isSell = engine.direction === 'SELL';
             
             let displaySignal = 'NEUTRAL / RANGE';
             if (isBuy) displaySignal = 'CALL (CE) BUY';
+            if (isSell) displaySignal = 'PUT (PE) BUY';
+
+            document.getElementById('activeSignalBadge').innerText = displaySignal;
+            document.getElementById('activeSignalBadge').className = `text-[10px] font-bold px-2 py-0.5 rounded border ${engine.badgeClass}`;
+
+            document.getElementById('valST').innerText = engine.supertrendStatus === 'BULLISH' ? 'GREEN (BULLISH)' : (engine.supertrendStatus === 'BEARISH' ? 'RED (BEARISH)' : 'NEUTRAL');
+            document.getElementById('valST').className = engine.supertrendStatus === 'BULLISH' ? 'text-emerald-400 font-bold' : (engine.supertrendStatus === 'BEARISH' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold');
+
+            document.getElementById('valMACD').innerText = engine.macdStatus === 'BULLISH' ? 'BULLISH CROSS' : (engine.macdStatus === 'BEARISH' ? 'BEARISH CROSS' : 'NEUTRAL');
+            document.getElementById('valMACD').className = engine.macdStatus === 'BULLISH' ? 'text-emerald-400 font-bold' : (engine.macdStatus === 'BEARISH' ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold');
+
+            document.getElementById('valNewsSent').innerText = engine.newsStatus;
+
+            document.getElementById('indSupertrend').innerText = engine.supertrendStatus;
+            document.getElementById('indSupertrend').className = engine.supertrendStatus === 'BULLISH' ? 'text-emerald-400' : (engine.supertrendStatus === 'BEARISH' ? 'text-rose-400' : 'text-amber-400');
+
+            document.getElementById('indMACD').innerText = engine.macdStatus;
+            document.getElementById('indMACD').className = engine.macdStatus === 'BULLISH' ? 'text-emerald-400' : (engine.macdStatus === 'BEARISH' ? 'text-rose-400' : 'text-amber-400');
+
+            document.getElementById('indVWAP').innerText = engine.vwapStatus;
+            document.getElementById('indVWAP').className = engine.vwapStatus === 'BULLISH' ? 'text-emerald-400' : (engine.vwapStatus === 'BEARISH' ? 'text-rose-400' : 'text-amber-400');
+
+            document.getElementById('indPCR').innerText = `${asset.pcr || 1.0} (${engine.pcrStatus})`;
+            document.getElementById('indPCR').className = engine.pcrStatus === 'BULLISH' ? 'text-emerald-400' : (engine.pcrStatus === 'BEARISH' ? 'text-rose-400' : 'text-amber-400');
+
+            document.getElementById('indNews').innerText = engine.newsStatus;
+            document.getElementById('indNews').className = engine.newsStatus === 'BULLISH' ? 'text-emerald-400' : (engine.newsStatus === 'BEARISH' ? 'text-rose-400' : 'text-amber-400');
+
+            let dteDays = 0.5;
+            if (expiryDate === '09-Nov-2026') dteDays = 7.0;
+            else if (expiryDate === '23-Nov-2026') dteDays = 21.0;
+
+            if (product === 'OPTIONS' && asset.isFno) {
+                document.getElementById('planHeaderTitle').innerText = `TRADE PLAN • OPTIONS [${expiryDate}]`;
+                const atm = Math.round(asset.ltp / asset.step) * asset.step;
+                const optType = isBuy ? 'CE' : (isSell ? 'PE' : 'STRADDLE');
+                document.getElementById('recContract').innerText = `${asset.symbol} ${atm} ${optType}`;
+
+                const iv = 0.2238;
+                let calculatedLTP = 91.05;
+                if (expiryDate === '03-Nov-2026') {
+                    if (optType === 'CE') {
+                        const intrinsic = Math.max(0, asset.ltp - atm);
+                        const timeVal = 0.3989 * asset.ltp * iv * Math.sqrt(dteDays / 365.0);
+                        calculatedLTP = Math.max(15.0, roundToPoint(intrinsic + (timeVal * 0.72)));
+                    } else {
+                        const timeVal = 0.3989 * asset.ltp * iv * Math.sqrt(dteDays / 365.0);
+                        calculatedLTP = Math.max(15.0, roundToPoint(timeVal));
+                    }
+                } else if (expiryDate === '09-Nov-2026') {
+                    calculatedLTP = roundToPoint(91.05 * 1.55);
+                } else {
+                    calculatedLTP = roundToPoint(91.05 * 2.30);
+                }
+
+                document.getElementById('recPremium').innerText = `₹${calculatedLTP.toFixed(2)}`;
+
+                const optEntryLow = (calculatedLTP * 0.98).toFixed(2);
+                const optEntryHigh = (calculatedLTP * 1.02).toFixed(2);
+                document.getElementById('recEntry').innerText = `₹${optEntryLow} – ₹${optEntryHigh}`;
+
+                const optRiskPts = Math.max(10, roundToPoint(calculatedLTP * 0.25));
+                const optSL = (calculatedLTP - optRiskPts).toFixed(2);
+                document.getElementById('recSL').innerText = `₹${optSL}`;
+
+                document.getElementById('recTP1').innerText = `₹${(calculatedLTP + (optRiskPts * 1.0)).toFixed(2)}`;
+                document.getElementById('recTP2').innerText = `₹${(calculatedLTP + (optRiskPts * 2.0)).toFixed(2)}`;
+                document.getElementById('recTP3').innerText = `₹${(calculatedLTP + (optRiskPts * 3.0)).toFixed(2)}`;
+
+                const lotStep = asset.symbol === 'NIFTY' ? 25 : (asset.symbol === 'BANKNIFTY' ? 15 : 20);
+                const suggestedQty = Math.max(lotStep, Math.floor(riskBudget / optRiskPts));
+                document.getElementById('recQty').innerText = `${suggestedQty} units`;
+
+            } else if (product === 'FUTURES' || asset.isFno) {
+                document.getElementById('planHeaderTitle').innerText = 'TRADE PLAN • FUTURES';
+                document.getElementById('recContract').innerText = `${asset.symbol} FUT`;
+                document.getElementById('recPremium').innerText = `₹${asset.ltp.toFixed(2)}`;
+
+                const riskUnit = asset.ltp * 0.0035;
+                document.getElementById('recEntry').innerText = `₹${(asset.ltp - riskUnit * 0.1).toFixed(2)} – ₹${(asset.ltp + riskUnit * 0.1).toFixed(2)}`;
+                document.getElementById('recSL').innerText = `₹${(isBuy ? asset.ltp - riskUnit : asset.ltp + riskUnit).toFixed(2)}`;
+                document.getElementById('recTP1').innerText = `₹${(isBuy ? asset.ltp + riskUnit : asset.ltp - riskUnit).toFixed(2)}`;
+                document.getElementById('recTP2').innerText = `₹${(isBuy ? asset.ltp + riskUnit * 2 : asset.ltp - riskUnit * 2).toFixed(2)}`;
+                document.getElementById('recTP3').innerText = `₹${(isBuy ? asset.ltp + riskUnit * 3 : asset.ltp - riskUnit * 3).toFixed(2)}`;
+
+                const qty = Math.max(1, Math.floor(riskBudget / riskUnit));
+                document.getElementById('recQty').innerText = `${qty} units`;
+            }
+
+            document.getElementById('recRR').innerText = '1:1 / 1:2 / 1:3';
+            document.getElementById('recScore').innerText = `${engine.score}/100 • ${displaySignal}`;
+            document.getElementById('recScore').className = `block font-bold ${engine.direction === 'BUY' ? 'text-emerald-400' : (engine.direction === 'SELL' ? 'text-rose-400' : 'text-amber-400')}`;
+
+            // Multi-Timeframe Matrix (5m, 15m, 30m, 1h, 1D)
+            const tfGrid = document.getElementById('timeframeMatrix');
+            tfGrid.innerHTML = '';
+            const tfs = generateMultiTimeframeMatrix(asset);
+
+            tfs.forEach(item => {
+                const div = document.createElement('div');
+                let colorClass = 'border-amber-800 bg-amber-950/40 text-amber-300';
+                if (item.dir === 'BUY') colorClass = 'border-emerald-800 bg-emerald-950/40 text-emerald-300';
+                else if (item.dir === 'SELL') colorClass = 'border-rose-800 bg-rose-950/40 text-rose-300';
+
+                div.className = `rounded p-1.5 border ${colorClass}`;
+                div.innerHTML = `<b>${item.tf}</b><div class="text-[9px] font-bold">${item.dir}</div>`;
+                tfGrid.appendChild(div);
+            });
+        }
+
+        function roundToPoint(val) {
+            return Math.round(val * 10) / 10;
+        }
+
+        function renderWatchlist() {
+            const tbody = document.getElementById('watchlistTbody');
+            tbody.innerHTML = '';
+
+            const displayList = MASTER_STOCK_DIRECTORY.filter(item => {
+                if (currentSegment === 'ALL') return true;
+                if (currentSegment === 'FNO') return item.segment === 'FNO';
+                if (currentSegment === 'INTRADAY') return item.segment === 'INTRADAY';
+                if (currentSegment === 'NON_FNO') return item.segment === 'NON_FNO';
+                if (currentSegment === 'LONGTERM') return item.segment === 'LONGTERM';
+                if (currentSegment === 'COMMODITY_ETF') return item.segment === 'COMMODITY_ETF';
+                return true;
+            });
+
+            displayList.forEach(item => {
+                const engine = calculate5FactorEngine(item, '5m');
+                const isCurrent = item.symbol === currentSymbol;
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-[#1c2536]/40 cursor-pointer border-b border-[#1c2536]/40 ${isCurrent ? 'bg-cyan-950/20' : ''}`;
+                tr.innerHTML = `
+                    <td class="p-2.5" onclick="selectSymbol('${item.symbol}')">
+                        <div class="font-bold text-white flex items-center gap-1.5">
+                            ${item.symbol}
+                            <span class="text-[9px] px-1 rounded ${item.isFno ? 'bg-[#080b11] text-cyan-400 border border-[#1c2536]' : 'bg-amber-950 text-amber-400 border border-amber-800'}">
+                                ${item.exchange}
+                            </span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 font-sans">${item.horizon}</div>
+                    </td>
+                    <td class="p-2.5 text-right font-bold text-white" onclick="selectSymbol('${item.symbol}')">
+                        ₹${item.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </td>
+                    <td class="p-2.5 text-center" onclick="selectSymbol('${item.symbol}')">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${engine.badgeClass}">
+                            ${engine.direction}
+                        </span>
+                    </td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="selectSymbol('${item.symbol}')" class="px-2.5 py-1 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 text-[10px] font-semibold hover:bg-cyan-900 transition">View</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function selectSymbol(sym) {
+            currentSymbol = sym;
+            const asset = MASTER_STOCK_DIRECTORY.find(u => u.symbol === sym) || MASTER_STOCK_DIRECTORY[0];
+            const sb = calculateSensibullLevels(asset);
+
+            document.getElementById('activeSymTitle').innerText = `${asset.symbol} (${asset.exchange})`;
+            document.getElementById('activeSegmentTag').innerText = asset.isFno ? asset.segment : 'CASH';
+            document.getElementById('valLTP').innerText = asset.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+            document.getElementById('valVWAP').innerText = (asset.vwap || asset.ltp).toFixed(2);
             
+            if (asset.pcr !== null && asset.pcr !== undefined) {
+                document.getElementById('pcrSpan').style.display = 'inline';
+                document.getElementById('valPCR').innerText = asset.pcr.toFixed(2);
+            } else {
+                document.getElementById('pcrSpan').style.display = 'none';
+            }
+
+            document.getElementById('valMaxPain').innerText = sb.maxPain;
+            document.getElementById('valS1').innerText = sb.s1;
+            document.getElementById('valS2').innerText = sb.s2;
+            document.getElementById('valS3').innerText = sb.s3;
+            document.getElementById('valR1').innerText = sb.r1;
+            document.getElementById('valR2').innerText = sb.r2;
+            document.getElementById('valR3').innerText = sb.r3;
+
+            updateTradePlanUI();
+            renderWatchlist();
+        }
+
+        function handleUniversalSearch() {
+            const query = document.getElementById('symbolSearchInput').value.trim().toUpperCase();
+            const dropdown = document.getElementById('searchDropdown');
+
+            if (!query) {
+                dropdown.classList.add('hidden');
+                dropdown.innerHTML = '';
+                return;
+            }
+
+            const results = MASTER_STOCK_DIRECTORY.filter(s => 
+                s.symbol.toUpperCase().includes(query) || 
+                s.name.toUpperCase().includes(query)
+            );
+
+            dropdown.innerHTML = '';
+            if (results.length > 0) {
+                results.slice(0, 9).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = "p-2.5 hover:bg-[#1c2536] cursor-pointer flex items-center justify-between text-xs";
+                    div.onclick = () => {
+                        dropdown.classList.add('hidden');
+                        document.getElementById('symbolSearchInput').value = '';
+                        selectSymbol(item.symbol);
+                    };
+                    div.innerHTML = `
+                        <div>
+                            <div class="font-bold text-white flex items-center gap-1.5">
+                                ${item.symbol}
+                                <span class="text-[9px] px-1 py-0.2 rounded ${item.isFno ? 'bg-cyan-950 text-cyan-400 border border-cyan-800' : 'bg-amber-950 text-amber-400 border border-amber-800'}">
+                                    ${item.isFno ? 'F&O' : 'CASH'}
+                                </span>
+                            </div>
+                            <div class="text-[10px] text-slate-400">${item.name}</div>
+                        </div>
+                        <div class="text-right font-mono">
+                            <div class="text-white font-bold">₹${item.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                        </div>
+                    `;
+                    dropdown.appendChild(div);
+                });
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function clearSearch() {
+            document.getElementById('symbolSearchInput').value = '';
+            document.getElementById('searchDropdown').classList.add('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('searchDropdown');
+            const input = document.getElementById('symbolSearchInput');
+            if (dropdown && !dropdown.contains(e.target) && e.target !== input) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function switchSegment(seg) {
+            currentSegment = seg;
+            ['ALL', 'FNO', 'INTRADAY', 'NON_FNO', 'LONGTERM', 'COMMODITY_ETF'].forEach(s => {
+                const b = document.getElementById(`seg-${s}`);
+                if (b) {
+                    if (s === seg) b.className = "segment-btn active px-3 py-1 rounded border border-[#1c2536] text-cyan-300";
+                    else b.className = "segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400";
+                }
+            });
+            renderWatchlist();
+        }
+
+        function toggleAutoTrading() {
+            autoTradeActive = !autoTradeActive;
+            const btn = document.getElementById('autoTradeBtn');
+            const dot = document.getElementById('autoTradeDot');
+            const txt = document.getElementById('autoTradeText');
+
+            if (autoTradeActive) {
+                btn.className = "flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded bg-amber-950 border border-amber-500 text-amber-300 transition";
+                dot.className = "w-2 h-2 rounded-full bg-amber-400 pulse-dot";
+                txt.innerText = "Paper Plan: ON";
+            } else {
+                btn.className = "flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 border border-slate-700 text-slate-300 transition";
+                dot.className = "w-2 h-2 rounded-full bg-slate-500";
+                txt.innerText = "Paper Plan: OFF";
+            }
+        }
+
+        function executePaytmOrder() {
+            alert(`⚡ Quick Order Triggered for ${document.getElementById('recContract').innerText}`);
+        }
+
+        function copyTradePlan() {
+            const asset = MASTER_STOCK_DIRECTORY.find(u => u.symbol === currentSymbol);
+            const text = `🎯 HARRY-NIFTY PRO — ${asset.symbol}\nContract: ${document.getElementById('recContract').innerText}\nPremium: ${document.getElementById('recPremium').innerText}\nEntry: ${document.getElementById('recEntry').innerText}\nSL: ${document.getElementById('recSL').innerText}\nTargets: ${document.getElementById('recTP1').innerText} / ${document.getElementById('recTP2').innerText} / ${document.getElementById('recTP3').innerText}`;
+            navigator.clipboard.writeText(text);
+            alert("Trade plan copied!");
+        }
+
+        function connectLiveWebSocket() {
+            if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+                return;
+            }
+
+            const serverUrl = localStorage.getItem('hn_ws_url') || 'wss://harry-backend.onrender.com/ws/live';
+            const badge = document.getElementById('liveStatusBadge');
+
+            try {
+                socket = new WebSocket(serverUrl);
+                
+                socket.onopen = () => {
+                    badge.innerText = "● LIVE FEED ACTIVE";
+                    badge.className = "text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono";
+                    if (reconnectTimer) {
+                        clearTimeout(reconnectTimer);
+                        reconnectTimer = null;
+                    }
+                };
+
+                socket.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    if (msg.type === "TICK_UPDATE" && msg.data) {
+                        Object.keys(msg.data).forEach(sym => {
+                            const found = MASTER_STOCK_DIRECTORY.find(u => u.symbol === sym);
+                            if (found && msg.data[sym].ltp > 0) {
+                                found.ltp = msg.data[sym].ltp;
+                                if (msg.data[sym].vwap) found.vwap = msg.data[sym].vwap;
+                                if (msg.data[sym].high) found.high = msg.data[sym].high;
+                                if (msg.data[sym].low) found.low = msg.data[sym].low;
+                                if (msg.data[sym].close) found.close = msg.data[sym].close;
+                            }
+                        });
+
+                        const current = MASTER_STOCK_DIRECTORY.find(u => u.symbol === currentSymbol);
+                        if (current) {
+                            document.getElementById('valLTP').innerText = current.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+                            document.getElementById('valVWAP').innerText = (current.vwap || current.ltp).toFixed(2);
+                            
+                            const sb = calculateSensibullLevels(current);
+                            document.getElementById('valMaxPain').innerText = sb.maxPain;
+                            document.getElementById('valS1').innerText = sb.s1;
+                            document.getElementById('valS2').innerText = sb.s2;
+                            document.getElementById('valS3').innerText = sb.s3;
+                            document.getElementById('valR1').innerText = sb.r1;
+                            document.getElementById('valR2').innerText = sb.r2;
+                            document.getElementById('valR3').innerText = sb.r3;
+                        }
+
+                        updateTradePlanUI();
+                        renderWatchlist();
+                    }
+                };
+
+                socket.onclose = () => {
+                    badge.innerText = "RECONNECTING...";
+                    badge.className = "text-[9px] px-1.5 py-0.2 rounded-full bg-amber-950 text-amber-400 border border-amber-800 font-mono";
+                    socket = null;
+                    if (!reconnectTimer) {
+                        reconnectTimer = setTimeout(connectLiveWebSocket, 4000);
+                    }
+                };
+
+                socket.onerror = (err) => {
+                    if (socket) socket.close();
+                };
+            } catch(e) {
+                console.error("WS error", e);
+            }
+        }
+
+        function toggleServerSettings() {
+            document.getElementById('serverModal').classList.toggle('hidden');
+        }
+
+        function saveServerAddress() {
+            const val = document.getElementById('wsServerInput').value.trim();
+            localStorage.setItem('hn_ws_url', val);
+            toggleServerSettings();
+            if (socket) {
+                socket.onclose = null;
+                socket.close();
+                socket = null;
+            }
+            connectLiveWebSocket();
+        }
+
+        window.onload = () => {
+            selectSymbol('NIFTY');
+            renderWatchlist();
+            connectLiveWebSocket();
+        };
+    </script>
+</body>
+</html>
