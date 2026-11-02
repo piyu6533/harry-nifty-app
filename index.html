@@ -23,7 +23,7 @@
             <div>
                 <div class="flex items-center gap-1.5">
                     <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">harry-nifty <span class="text-[10px] text-cyan-400 font-mono">PRO</span></h1>
-                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">AUTO-SYNC FEED</span>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">BLACK-SCHOLES ENGINE</span>
                     <span id="liveStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono">
                         ● LIVE FEED ACTIVE
                     </span>
@@ -45,10 +45,10 @@
         </div>
     </header>
 
-    <!-- Universal Search (Z-Index and Overflow Optimized) -->
+    <!-- Universal Search (170+ All F&O Stocks) -->
     <div class="p-2.5 bg-[#111723]/90 border-b border-[#1c2536] flex flex-wrap items-center justify-between gap-2 relative z-50">
         <div class="relative flex-1 min-w-[240px]">
-            <input type="text" id="symbolSearchInput" oninput="handleUniversalSearch()" placeholder="🔍 Type ANY F&O Stock (ADANIENT, SBIN, ITC, COALINDIA, TATAMOTORS)..." 
+            <input type="text" id="symbolSearchInput" oninput="handleUniversalSearch()" placeholder="🔍 Type ANY Stock or Index (ADANIENT, SBIN, ITC, COALINDIA, TATAMOTORS)..." 
                    class="w-full pl-3 pr-8 py-1.5 text-xs rounded-lg bg-[#080b11] border border-[#1c2536] text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono">
             <button onclick="clearSearch()" class="absolute right-2.5 top-2 text-xs text-slate-500 hover:text-white">✕</button>
             <div id="searchDropdown" class="hidden absolute left-0 right-0 top-10 bg-[#111723] border border-cyan-800 rounded-lg shadow-2xl z-50 max-h-80 overflow-y-auto divide-y divide-[#1c2536]"></div>
@@ -108,7 +108,7 @@
         <!-- Left Pane: Option Chain Matrix + Confluence Trade Plan -->
         <div class="w-full lg:w-3/5 p-2.5 sm:p-3 space-y-3 border-r border-[#1c2536]">
             
-            <!-- LIVE OPTION CHAIN -->
+            <!-- LIVE DYNAMIC OPTION CHAIN -->
             <section class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
                 <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex flex-wrap justify-between items-center text-xs gap-2">
                     <div class="flex items-center gap-2">
@@ -153,6 +153,7 @@
                             <option value="FUTURES">Futures</option>
                         </select>
 
+                        <!-- Expiry Dropdown (triggers real Black-Scholes recalculation) -->
                         <select id="expirySelect" onchange="updateTradePlanUI()" class="text-xs bg-[#080b11] border border-cyan-800 text-cyan-300 font-semibold rounded px-2 py-1">
                             <option value="03-Nov-2026" selected>03 Nov 2026 (Weekly)</option>
                             <option value="09-Nov-2026">09 Nov 2026 (Next Weekly)</option>
@@ -290,6 +291,7 @@
     </div>
 
     <script>
+        // COMPREHENSIVE NSE F&O UNIVERSE (170+ STOCKS & INDICES)
         const MASTER_STOCK_DIRECTORY = [
             // INDICES (WITH REAL CLOSING LEVELS)
             { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'INDEX', ltp: 23440.80, vwap: 23415.00, high: 23485.00, low: 23320.00, close: 23440.80, pcr: 0.96, newsSentiment: 'BULLISH', step: 50 },
@@ -344,6 +346,25 @@
         let autoTradeActive = false;
         let socket = null;
         let reconnectTimer = null;
+
+        // REAL BLACK-SCHOLES FORMULA ENGINE
+        function normalCDF(x) {
+            const t = 1 / (1 + 0.2316419 * Math.abs(x));
+            const d = 0.3989423 * Math.exp(-x * x / 2);
+            const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+            return x > 0 ? 1 - prob : prob;
+        }
+
+        function calculateBlackScholes(S, K, T, v, type) {
+            if (T <= 0.0005) T = 0.0005; // Guard against 0 DTE division
+            const d1 = (Math.log(S / K) + (v * v / 2) * T) / (v * Math.sqrt(T));
+            const d2 = d1 - v * Math.sqrt(T);
+            if (type === 'CE') {
+                return Math.max(0.50, S * normalCDF(d1) - K * normalCDF(d2));
+            } else {
+                return Math.max(0.50, K * normalCDF(-d2) - S * normalCDF(-d1));
+            }
+        }
 
         function calculate5FactorEngine(asset, tf = '5m') {
             const ltp = asset.ltp;
@@ -408,13 +429,28 @@
             });
         }
 
-        // ACCURATE LIVE OPTION CHAIN (Continuous Live Greeks & Strike Sync)
+        // ACCURATE BLACK-SCHOLES DYNAMIC OPTION CHAIN
         async function fetchDirectPaytmOptionChain(asset, expiryDate) {
             const tbody = document.getElementById('optionChainTbody');
             const step = asset.step || 50;
             const atm = Math.round(asset.ltp / step) * step;
 
-            // Try fetching direct broker option chain from backend
+            // DYNAMIC DTE RESOLUTION PER EXPIRY DATE
+            let dteDays = 0.5;
+            if (expiryDate.includes('09-Nov')) dteDays = 7.0;
+            else if (expiryDate.includes('23-Nov')) dteDays = 21.0;
+            else {
+                try {
+                    const p = expiryDate.split('-');
+                    if (p.length === 3) {
+                        const target = new Date(`${p[1]} ${p[0]}, ${p[2]}`);
+                        const diff = (target - new Date()) / (1000 * 60 * 60 * 24);
+                        dteDays = Math.max(0.4, diff);
+                    }
+                } catch(e) { dteDays = 0.5; }
+            }
+
+            // Try Live Broker Feed First
             try {
                 const backendHost = (localStorage.getItem('hn_ws_url') || 'wss://harry-backend.onrender.com/ws/live')
                     .replace('wss://', 'https://')
@@ -447,25 +483,22 @@
                 }
             } catch(e) {}
 
-            // FALLBACK TO CONTINUOUS LIVE GREEKS (Synchronized with exact spot price)
+            // MATHEMATICAL BLACK-SCHOLES DYNAMIC CHAIN
             tbody.innerHTML = '';
             const strikes = [-3, -2, -1, 0, 1, 2, 3].map(i => atm + (i * step));
-            const iv = 0.2238;
-            const dte = 0.5;
+            const iv = 0.2238; // 22.38% Market IV
+            const T = dteDays / 365.0;
 
             strikes.forEach(strike => {
                 const isATM = strike === atm;
                 const isITM_CE = asset.ltp > strike;
                 const isITM_PE = asset.ltp < strike;
 
-                const cInt = Math.max(0, asset.ltp - strike);
-                const tVal = 0.3989 * asset.ltp * iv * Math.sqrt(dte / 365.0);
-                const callLTP = (cInt + (tVal * (isITM_CE ? 0.72 : 0.85))).toFixed(2);
-                const callOI = (Math.max(10, 180 - Math.abs(strike - atm) * 0.4)).toFixed(1);
+                const callLTP = calculateBlackScholes(asset.ltp, strike, T, iv, 'CE').toFixed(2);
+                const putLTP = calculateBlackScholes(asset.ltp, strike, T, iv, 'PE').toFixed(2);
 
-                const pInt = Math.max(0, strike - asset.ltp);
-                const putLTP = (pInt + (tVal * (isITM_PE ? 0.72 : 0.85))).toFixed(2);
-                const putOI = (Math.max(10, 190 - Math.abs(strike - atm) * 0.45)).toFixed(1);
+                const callOI = Math.max(12, Math.round(180 - Math.abs(strike - atm) * 0.45)).toFixed(1);
+                const putOI = Math.max(12, Math.round(190 - Math.abs(strike - atm) * 0.50)).toFixed(1);
 
                 const tr = document.createElement('tr');
                 tr.className = `hover:bg-[#1c2536]/50 ${isATM ? 'bg-cyan-950/30 font-bold border-y border-cyan-800/60' : ''}`;
@@ -536,14 +569,20 @@
             document.getElementById('indNews').innerText = engine.newsStatus;
             document.getElementById('chainExpiryTag').innerText = expiryDate;
 
+            // DTE Days for Trade Plan
+            let dteDays = 0.5;
+            if (expiryDate.includes('09-Nov')) dteDays = 7.0;
+            else if (expiryDate.includes('23-Nov')) dteDays = 21.0;
+
             if (product === 'OPTIONS') {
                 document.getElementById('planHeaderTitle').innerText = `TRADE PLAN • OPTIONS [${expiryDate}]`;
                 const atm = Math.round(asset.ltp / asset.step) * asset.step;
                 const optType = isBuy ? 'CE' : (isSell ? 'PE' : 'STRADDLE');
                 document.getElementById('recContract').innerText = `${asset.symbol} ${atm} ${optType}`;
 
-                let calculatedLTP = Math.max(10, Math.round((asset.ltp * 0.0039) * 10) / 10);
-                if (asset.symbol === 'NIFTY') calculatedLTP = 92.40;
+                const iv = 0.2238;
+                const T = dteDays / 365.0;
+                const calculatedLTP = calculateBlackScholes(asset.ltp, atm, T, iv, isBuy ? 'CE' : 'PE');
 
                 document.getElementById('recPremium').innerText = `₹${calculatedLTP.toFixed(2)}`;
                 document.getElementById('recEntry').innerText = `₹${(calculatedLTP * 0.98).toFixed(2)} – ₹${(calculatedLTP * 1.02).toFixed(2)}`;
@@ -625,7 +664,6 @@
             renderWatchlist();
         }
 
-        // FULL SEARCH OVERLAY (Visible and click-safe)
         function handleUniversalSearch() {
             const query = document.getElementById('symbolSearchInput').value.trim().toUpperCase();
             const dropdown = document.getElementById('searchDropdown');
