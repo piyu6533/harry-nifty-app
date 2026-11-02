@@ -23,7 +23,7 @@
             <div>
                 <div class="flex items-center gap-1.5">
                     <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">harry-nifty <span class="text-[10px] text-cyan-400 font-mono">PRO</span></h1>
-                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">5-CONF ENGINE</span>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">5-FACTOR NO-CHART</span>
                     <span id="liveStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono">
                         ● LIVE FEED ACTIVE
                     </span>
@@ -45,22 +45,21 @@
         </div>
     </header>
 
-    <!-- Search & Segment Navigation -->
+    <!-- Search & Segment Navigation (Universal All Stocks) -->
     <div class="p-2.5 bg-[#111723]/90 border-b border-[#1c2536] flex flex-wrap items-center justify-between gap-2 relative">
-        <div class="relative flex-1 min-w-[220px]">
-            <input type="text" id="symbolSearchInput" oninput="handleUniversalSearch()" placeholder="🔍 Search Index, Stock, Commodity, or ETF..." 
+        <div class="relative flex-1 min-w-[240px]">
+            <input type="text" id="symbolSearchInput" oninput="handleUniversalSearch()" placeholder="🔍 Type any Stock or Index (e.g. SBIN, NIFTY, TATASTEEL, RELIANCE)..." 
                    class="w-full pl-3 pr-8 py-1.5 text-xs rounded-lg bg-[#080b11] border border-[#1c2536] text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 font-mono">
             <button onclick="clearSearch()" class="absolute right-2.5 top-2 text-xs text-slate-500 hover:text-white">✕</button>
-            <div id="searchDropdown" class="hidden absolute left-0 right-0 top-9 bg-[#111723] border border-[#1c2536] rounded-lg shadow-2xl z-50 max-h-64 overflow-y-auto divide-y divide-[#1c2536]"></div>
+            <div id="searchDropdown" class="hidden absolute left-0 right-0 top-9 bg-[#111723] border border-[#1c2536] rounded-lg shadow-2xl z-50 max-h-72 overflow-y-auto divide-y divide-[#1c2536]"></div>
         </div>
 
         <div class="flex items-center gap-1 text-xs overflow-x-auto no-scrollbar py-0.5">
-            <button onclick="switchSegment('ALL')" id="seg-ALL" class="segment-btn active px-3 py-1 rounded border border-[#1c2536] text-slate-300">All</button>
-            <button onclick="switchSegment('FNO')" id="seg-FNO" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">⚡ F&O Options</button>
-            <button onclick="switchSegment('INTRADAY')" id="seg-INTRADAY" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">🎯 Intraday</button>
-            <button onclick="switchSegment('NON_FNO')" id="seg-NON_FNO" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-amber-400 font-semibold">💼 Cash (Non-F&O)</button>
-            <button onclick="switchSegment('LONGTERM')" id="seg-LONGTERM" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">📈 Long-Term</button>
-            <button onclick="switchSegment('COMMODITY_ETF')" id="seg-COMMODITY_ETF" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">🪙 ETF & MCX</button>
+            <button onclick="switchSegment('ALL')" id="seg-ALL" class="segment-btn active px-3 py-1 rounded border border-[#1c2536] text-slate-300">All Watchlist</button>
+            <button onclick="switchSegment('FNO')" id="seg-FNO" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">⚡ F&O High Liquidity</button>
+            <button onclick="switchSegment('BANKS')" id="seg-BANKS" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">🏦 Banking</button>
+            <button onclick="switchSegment('IT')" id="seg-IT" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">💻 IT & Tech</button>
+            <button onclick="switchSegment('AUTO')" id="seg-AUTO" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">🚗 Auto & Metals</button>
         </div>
     </div>
 
@@ -78,7 +77,7 @@
                 <span id="pcrSpan">PCR: <b id="valPCR" class="text-slate-200">0.92</b></span>
                 <span>Supertrend (21,1): <b id="valST" class="text-rose-400">RED (BEARISH)</b></span>
                 <span>MACD (12,26,9): <b id="valMACD" class="text-rose-400">BEARISH CROSS</b></span>
-                <span>News Sentiment: <b id="valNewsSent" class="text-amber-400">NEUTRAL / CAUTIOUS</b></span>
+                <span>News: <b id="valNewsSent" class="text-amber-400">NEUTRAL / CAUTIOUS</b></span>
             </div>
         </div>
 
@@ -124,14 +123,48 @@
     <!-- Main Workspace Layout -->
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
         
-        <!-- Left Pane: Trade Plan Engine & Multi-Timeframe Confirmation (No Chart) -->
+        <!-- Left Pane: Option Chain Matrix + Confluence Trade Plan -->
         <div class="w-full lg:w-3/5 p-2.5 sm:p-3 overflow-y-auto space-y-3 border-r border-[#1c2536]">
             
-            <!-- Trade Plan Section -->
-            <section class="p-4 rounded-xl bg-cyan-950/20 border border-cyan-800/60 shadow space-y-3.5">
+            <!-- LIVE OPTION CHAIN MATRIX (Replaces Chart) -->
+            <section class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
+                <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex flex-wrap justify-between items-center text-xs gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+                        <b class="text-white font-mono">LIVE OPTION CHAIN</b>
+                        <span id="chainExpiryTag" class="text-[10px] px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono">03-Nov-2026</span>
+                    </div>
+                    <div class="flex gap-3 text-[10px] font-mono text-slate-400">
+                        <span class="text-emerald-400">CALL SIDE (CE)</span>
+                        <span>STRIKE</span>
+                        <span class="text-rose-400">PUT SIDE (PE)</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-xs font-mono">
+                        <thead class="bg-[#1c2536]/80 text-[10px] text-slate-400 uppercase tracking-wider">
+                            <tr>
+                                <th class="p-2 text-right">Call OI (L)</th>
+                                <th class="p-2 text-right">Call LTP</th>
+                                <th class="p-2 text-center bg-[#1c2536]/90 text-cyan-300">STRIKE</th>
+                                <th class="p-2 text-left">Put LTP</th>
+                                <th class="p-2 text-left">Put OI (L)</th>
+                                <th class="p-2 text-center">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody id="optionChainTbody" class="divide-y divide-[#1c2536]/40 text-[11px]">
+                            <!-- Generated Live via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 5-Factor Trade Plan & Multi-Timeframe Confirmation -->
+            <section class="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-800/60 shadow space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                        <div class="text-sm font-bold text-cyan-400" id="planHeaderTitle">TRADE PLAN • OPTIONS (CE / PE)</div>
+                        <div class="text-xs font-bold text-cyan-400" id="planHeaderTitle">TRADE PLAN • OPTIONS (CE / PE)</div>
                         <div id="planMode" class="text-[10px] text-emerald-400 mt-0.5 font-mono">SUPERTREND (21,1) + MACD + VWAP + PCR + NEWS</div>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -159,8 +192,8 @@
                     </label>
                 </div>
 
-                <!-- 5-Factor Indicator Response Bar (No RSI, No BB) -->
-                <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536] flex flex-wrap justify-between items-center text-[10px] font-mono gap-1">
+                <!-- 5-Factor Indicator Response Bar -->
+                <div class="bg-[#080b11] p-2 rounded border border-[#1c2536] flex flex-wrap justify-between items-center text-[10px] font-mono gap-1">
                     <span class="text-slate-400">ST (21,1): <b id="indSupertrend" class="text-rose-400">RED (BEARISH)</b></span>
                     <span class="text-slate-400">MACD: <b id="indMACD" class="text-rose-400">BEARISH</b></span>
                     <span class="text-slate-400">VWAP Pos: <b id="indVWAP" class="text-rose-400">BELOW VWAP</b></span>
@@ -169,36 +202,36 @@
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
+                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
                         <div class="text-slate-400 text-[10px]">Recommended Contract</div>
                         <b id="recContract" class="text-white font-mono">NIFTY 23200 PE</b>
                     </div>
-                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
+                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
                         <div class="text-slate-400 text-[10px]">Live Option LTP</div>
                         <b id="recPremium" class="text-amber-400 font-mono">₹91.05</b>
                     </div>
-                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
+                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
                         <div class="text-slate-400 text-[10px]">Option Entry Zone</div>
                         <b id="recEntry" class="text-cyan-400 font-mono">₹89.00 – ₹93.00</b>
                     </div>
-                    <div class="bg-[#080b11] p-2.5 rounded border border-[#1c2536]">
+                    <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
                         <div class="text-slate-400 text-[10px]">Option Stop-Loss</div>
                         <b id="recSL" class="text-rose-400 font-mono">₹68.00</b>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-2 text-xs font-mono">
-                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2.5">
+                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2">
                         <div class="text-emerald-300 text-[10px]">OPTION TARGET 1</div>
-                        <b id="recTP1" class="text-white text-sm">₹114.00</b>
+                        <b id="recTP1" class="text-white">₹114.00</b>
                     </div>
-                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2.5">
+                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2">
                         <div class="text-emerald-300 text-[10px]">OPTION TARGET 2</div>
-                        <b id="recTP2" class="text-white text-sm">₹137.00</b>
+                        <b id="recTP2" class="text-white">₹137.00</b>
                     </div>
-                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2.5">
+                    <div class="bg-emerald-950/30 border border-emerald-900 rounded p-2">
                         <div class="text-emerald-300 text-[10px]">OPTION TARGET 3</div>
-                        <b id="recTP3" class="text-white text-sm">₹160.00</b>
+                        <b id="recTP3" class="text-white">₹160.00</b>
                     </div>
                 </div>
 
@@ -212,7 +245,7 @@
                         <b id="recQty" class="block text-white">25 units</b>
                     </div>
                     <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
-                        <span class="text-slate-400">Confluence Signal</span>
+                        <span class="text-slate-400">5-Factor Score</span>
                         <b id="recScore" class="block text-rose-400 font-bold">85/100 • PUT (PE) BUY</b>
                     </div>
                     <div class="bg-[#080b11] p-2 rounded border border-[#1c2536]">
@@ -222,18 +255,14 @@
                 </div>
 
                 <!-- 5 SPECIFIC TIMEFRAMES CONFIRMATION GRID (5m, 15m, 30m, 1h, 1D) -->
-                <div class="bg-[#080b11] border border-[#1c2536] rounded p-2.5">
+                <div class="bg-[#080b11] border border-[#1c2536] rounded p-2">
                     <div class="flex justify-between text-[10px] mb-2 font-mono">
                         <b class="text-slate-300">MULTI-TIMEFRAME CONFIRMATION (BUY / SELL / NEUTRAL)</b>
                         <span class="text-slate-500">5m · 15m · 30m · 1h · 1D</span>
                     </div>
                     <div id="timeframeMatrix" class="grid grid-cols-5 gap-1.5 text-center text-xs font-mono">
-                        <!-- Rendered by JS -->
+                        <!-- Filled by JS -->
                     </div>
-                </div>
-
-                <div id="planReason" class="text-[10px] text-slate-300 leading-relaxed font-mono">
-                    Signal derived from Supertrend (21,1), MACD crossover, VWAP confluence, Option Chain PCR, and Market News.
                 </div>
 
                 <div class="flex flex-wrap gap-2 pt-1">
@@ -247,12 +276,12 @@
             </section>
         </div>
 
-        <!-- Right Pane: Active Assets Screener -->
+        <!-- Right Pane: Active Assets Screener with Complete F&O Database -->
         <div class="w-full lg:w-2/5 p-2.5 sm:p-3 overflow-y-auto">
             <div class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
                 <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex justify-between items-center text-xs">
-                    <span class="font-bold text-white" id="watchlistHeader">Active Assets Screener</span>
-                    <span class="text-slate-400 text-[10px] font-mono">Tap any row to select</span>
+                    <span class="font-bold text-white" id="watchlistHeader">Market Watchlist</span>
+                    <span class="text-slate-400 text-[10px] font-mono">Tap any row to inspect</span>
                 </div>
                 <table class="w-full text-left text-xs font-mono">
                     <thead class="bg-[#1c2536]/60 text-slate-400 text-[10px] uppercase font-semibold">
@@ -284,21 +313,40 @@
     </div>
 
     <script>
+        // FULL MASTER STOCK DIRECTORY (INCLUDES EXPANDED F&O & CASH STOCKS)
         const MASTER_STOCK_DIRECTORY = [
-            { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 23226.45, vwap: 23295.00, high: 23360.00, low: 23210.00, close: 23310.00, pcr: 0.92, newsSentiment: 'NEUTRAL', step: 50, inCurated: true },
-            { symbol: 'BANKNIFTY', name: 'Nifty Bank Index', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 54633.05, vwap: 54720.00, high: 54850.00, low: 54550.00, close: 54700.00, pcr: 0.86, newsSentiment: 'BEARISH', step: 100, inCurated: true },
-            { symbol: 'SENSEX', name: 'BSE Sensex Index', exchange: 'BSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 80120.50, vwap: 79950.00, high: 80300.00, low: 79800.00, close: 80000.00, pcr: 1.30, newsSentiment: 'BULLISH', step: 100, inCurated: true },
-            { symbol: 'FINNIFTY', name: 'Nifty Financial Services', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 23910.80, vwap: 23890.00, high: 24020.00, low: 23840.00, close: 23900.00, pcr: 1.08, newsSentiment: 'NEUTRAL', step: 50, inCurated: true },
-            { symbol: 'BANKEX', name: 'BSE Bankex Index', exchange: 'BSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 58450.00, vwap: 58580.00, high: 58700.00, low: 58300.00, close: 58500.00, pcr: 0.88, newsSentiment: 'BEARISH', step: 100, inCurated: true },
-            { symbol: 'MIDCPNIFTY', name: 'Nifty Midcap Select', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 12450.25, vwap: 12390.00, high: 12500.00, low: 12400.00, close: 12430.00, pcr: 1.35, newsSentiment: 'BULLISH', step: 25, inCurated: true },
+            // INDICES
+            { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'INDEX', ltp: 23226.45, vwap: 23295.00, high: 23360.00, low: 23210.00, close: 23310.00, pcr: 0.92, newsSentiment: 'NEUTRAL', step: 50 },
+            { symbol: 'BANKNIFTY', name: 'Nifty Bank Index', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'INDEX', ltp: 54633.05, vwap: 54720.00, high: 54850.00, low: 54550.00, close: 54700.00, pcr: 0.86, newsSentiment: 'BEARISH', step: 100 },
+            { symbol: 'FINNIFTY', name: 'Nifty Financial Services', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'INDEX', ltp: 23910.80, vwap: 23890.00, high: 24020.00, low: 23840.00, close: 23900.00, pcr: 1.08, newsSentiment: 'NEUTRAL', step: 50 },
+            { symbol: 'MIDCPNIFTY', name: 'Nifty Midcap Select', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'INDEX', ltp: 12450.25, vwap: 12390.00, high: 12500.00, low: 12400.00, close: 12430.00, pcr: 1.35, newsSentiment: 'BULLISH', step: 25 },
+            { symbol: 'SENSEX', name: 'BSE Sensex Index', exchange: 'BSE', segment: 'FNO', isFno: true, category: 'INDEX', ltp: 80120.50, vwap: 79950.00, high: 80300.00, low: 79800.00, close: 80000.00, pcr: 1.30, newsSentiment: 'BULLISH', step: 100 },
+            { symbol: 'BANKEX', name: 'BSE Bankex Index', exchange: 'BSE', segment: 'FNO', isFno: true, category: 'INDEX', ltp: 58450.00, vwap: 58580.00, high: 58700.00, low: 58300.00, close: 58500.00, pcr: 0.88, newsSentiment: 'BEARISH', step: 100 },
 
-            { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 1252.60, vwap: 1258.00, high: 1265.00, low: 1240.00, close: 1255.00, pcr: 1.31, newsSentiment: 'BULLISH', step: 10, inCurated: true },
-            { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 689.45, vwap: 693.00, high: 695.00, low: 680.00, close: 690.00, pcr: 0.82, newsSentiment: 'BEARISH', step: 5, inCurated: true },
-            { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 1245.80, vwap: 1238.00, high: 1255.00, low: 1230.00, close: 1240.00, pcr: 1.15, newsSentiment: 'BULLISH', step: 10, inCurated: true },
-            { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', exchange: 'NSE', segment: 'INTRADAY', isFno: true, horizon: 'Intraday Short Setup', ltp: 924.50, vwap: 931.00, high: 935.00, low: 915.00, close: 928.00, pcr: 0.76, newsSentiment: 'BEARISH', step: 10, inCurated: true },
-            { symbol: 'INFY', name: 'Infosys Limited', exchange: 'NSE', segment: 'INTRADAY', isFno: true, horizon: 'Intraday VWAP Breakout', ltp: 1845.00, vwap: 1832.00, high: 1855.00, low: 1825.00, close: 1835.00, pcr: 1.28, newsSentiment: 'BULLISH', step: 20, inCurated: true },
-            { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd', exchange: 'NSE', segment: 'INTRADAY', isFno: true, horizon: 'Intraday Volume Spike', ltp: 1650.10, vwap: 1638.00, high: 1660.00, low: 1630.00, close: 1645.00, pcr: 1.42, newsSentiment: 'BULLISH', step: 20, inCurated: true },
-            { symbol: 'TCS', name: 'Tata Consultancy Services', exchange: 'NSE', segment: 'LONGTERM', isFno: true, horizon: 'Accumulate for 1-3 Yrs', ltp: 4120.00, vwap: 4110.00, high: 4140.00, low: 4090.00, close: 4115.00, pcr: 1.12, newsSentiment: 'NEUTRAL', step: 50, inCurated: true }
+            // BANKING & FINANCE
+            { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', exchange: 'NSE', segment: 'BANKS', isFno: true, category: 'BANKS', ltp: 689.45, vwap: 693.00, high: 695.00, low: 680.00, close: 690.00, pcr: 0.82, newsSentiment: 'BEARISH', step: 5 },
+            { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', exchange: 'NSE', segment: 'BANKS', isFno: true, category: 'BANKS', ltp: 1245.80, vwap: 1238.00, high: 1255.00, low: 1230.00, close: 1240.00, pcr: 1.15, newsSentiment: 'BULLISH', step: 10 },
+            { symbol: 'SBIN', name: 'State Bank of India', exchange: 'NSE', segment: 'BANKS', isFno: true, category: 'BANKS', ltp: 842.30, vwap: 839.00, high: 848.00, low: 835.00, close: 840.00, pcr: 1.25, newsSentiment: 'BULLISH', step: 5 },
+            { symbol: 'AXISBANK', name: 'Axis Bank Ltd', exchange: 'NSE', segment: 'BANKS', isFno: true, category: 'BANKS', ltp: 1188.00, vwap: 1195.00, high: 1205.00, low: 1180.00, close: 1192.00, pcr: 0.78, newsSentiment: 'BEARISH', step: 10 },
+            { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank', exchange: 'NSE', segment: 'BANKS', isFno: true, category: 'BANKS', ltp: 1780.00, vwap: 1775.00, high: 1795.00, low: 1765.00, close: 1772.00, pcr: 1.05, newsSentiment: 'NEUTRAL', step: 20 },
+            { symbol: 'BAJFINANCE', name: 'Bajaj Finance Ltd', exchange: 'NSE', segment: 'BANKS', isFno: true, category: 'BANKS', ltp: 6950.00, vwap: 6980.00, high: 7040.00, low: 6910.00, close: 6960.00, pcr: 0.89, newsSentiment: 'NEUTRAL', step: 50 },
+
+            // IT & TECH
+            { symbol: 'INFY', name: 'Infosys Limited', exchange: 'NSE', segment: 'IT', isFno: true, category: 'IT', ltp: 1845.00, vwap: 1832.00, high: 1855.00, low: 1825.00, close: 1835.00, pcr: 1.28, newsSentiment: 'BULLISH', step: 20 },
+            { symbol: 'TCS', name: 'Tata Consultancy Services', exchange: 'NSE', segment: 'IT', isFno: true, category: 'IT', ltp: 4120.00, vwap: 4110.00, high: 4140.00, low: 4090.00, close: 4115.00, pcr: 1.12, newsSentiment: 'NEUTRAL', step: 50 },
+            { symbol: 'WIPRO', name: 'Wipro Limited', exchange: 'NSE', segment: 'IT', isFno: true, category: 'IT', ltp: 564.00, vwap: 561.00, high: 568.00, low: 558.00, close: 560.00, pcr: 1.18, newsSentiment: 'BULLISH', step: 5 },
+            { symbol: 'HCLTECH', name: 'HCL Technologies', exchange: 'NSE', segment: 'IT', isFno: true, category: 'IT', ltp: 1780.00, vwap: 1765.00, high: 1790.00, low: 1755.00, close: 1770.00, pcr: 1.22, newsSentiment: 'BULLISH', step: 20 },
+            { symbol: 'TECHM', name: 'Tech Mahindra Ltd', exchange: 'NSE', segment: 'IT', isFno: true, category: 'IT', ltp: 1640.00, vwap: 1648.00, high: 1655.00, low: 1630.00, close: 1642.00, pcr: 0.84, newsSentiment: 'BEARISH', step: 20 },
+
+            // AUTO & HEAVYWEIGHTS
+            { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'HEAVY', ltp: 1252.60, vwap: 1258.00, high: 1265.00, low: 1240.00, close: 1255.00, pcr: 1.31, newsSentiment: 'BULLISH', step: 10 },
+            { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', exchange: 'NSE', segment: 'AUTO', isFno: true, category: 'AUTO', ltp: 924.50, vwap: 931.00, high: 935.00, low: 915.00, close: 928.00, pcr: 0.76, newsSentiment: 'BEARISH', step: 10 },
+            { symbol: 'MARUTI', name: 'Maruti Suzuki India', exchange: 'NSE', segment: 'AUTO', isFno: true, category: 'AUTO', ltp: 11450.00, vwap: 11410.00, high: 11520.00, low: 11380.00, close: 11420.00, pcr: 1.14, newsSentiment: 'BULLISH', step: 100 },
+            { symbol: 'M&M', name: 'Mahindra & Mahindra', exchange: 'NSE', segment: 'AUTO', isFno: true, category: 'AUTO', ltp: 2980.00, vwap: 2965.00, high: 3010.00, low: 2950.00, close: 2970.00, pcr: 1.26, newsSentiment: 'BULLISH', step: 20 },
+            { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'HEAVY', ltp: 1650.10, vwap: 1638.00, high: 1660.00, low: 1630.00, close: 1645.00, pcr: 1.42, newsSentiment: 'BULLISH', step: 20 },
+            { symbol: 'TATASTEEL', name: 'Tata Steel Ltd', exchange: 'NSE', segment: 'AUTO', isFno: true, category: 'AUTO', ltp: 148.50, vwap: 150.20, high: 152.00, low: 147.00, close: 149.00, pcr: 0.81, newsSentiment: 'BEARISH', step: 2.5 },
+            { symbol: 'LT', name: 'Larsen & Toubro Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'HEAVY', ltp: 3580.00, vwap: 3560.00, high: 3610.00, low: 3540.00, close: 3570.00, pcr: 1.16, newsSentiment: 'BULLISH', step: 20 },
+            { symbol: 'ITC', name: 'ITC Limited', exchange: 'NSE', segment: 'FNO', isFno: true, category: 'HEAVY', ltp: 476.00, vwap: 474.00, high: 479.00, low: 472.00, close: 475.00, pcr: 1.09, newsSentiment: 'NEUTRAL', step: 5 }
         ];
 
         let currentSymbol = 'NIFTY';
@@ -314,12 +362,10 @@
             const pcr = asset.pcr !== null && asset.pcr !== undefined ? asset.pcr : 1.0;
             const news = asset.newsSentiment || 'NEUTRAL';
 
-            // 1. VWAP Baseline Position
             const isAboveVwap = ltp > (vwap * 1.0003);
             const isBelowVwap = ltp < (vwap * 0.9997);
             const vwapStatus = isAboveVwap ? 'BULLISH' : (isBelowVwap ? 'BEARISH' : 'NEUTRAL');
 
-            // 2. Supertrend (21, 1) Evaluation
             const atr21 = (asset.high && asset.low && asset.high > asset.low) 
                 ? (asset.high - asset.low) * 0.35 
                 : (ltp * 0.0022);
@@ -331,17 +377,14 @@
             else if (ltp <= stLower) supertrendStatus = 'BEARISH';
             else supertrendStatus = ltp >= vwap ? 'BULLISH' : 'BEARISH';
 
-            // 3. MACD (12, 26, 9) Momentum Evaluation
             let macdStatus = 'NEUTRAL';
             if (ltp >= (vwap * 1.0008)) macdStatus = 'BULLISH';
             else if (ltp <= (vwap * 0.9992)) macdStatus = 'BEARISH';
 
-            // 4. Put-Call Ratio (PCR) Evaluation
             let pcrStatus = 'NEUTRAL';
             if (pcr >= 1.15) pcrStatus = 'BULLISH';
             else if (pcr <= 0.85) pcrStatus = 'BEARISH';
 
-            // 5. News Sentiment Evaluation
             let newsStatus = news;
 
             let bullPts = 0;
@@ -395,6 +438,60 @@
                 }
                 return { tf, dir };
             });
+        }
+
+        // LIVE OPTION CHAIN MATRIX GENERATOR
+        function renderLiveOptionChainTable(asset) {
+            const tbody = document.getElementById('optionChainTbody');
+            tbody.innerHTML = '';
+
+            const step = asset.step || 50;
+            const atm = Math.round(asset.ltp / step) * step;
+            const iv = 0.2238;
+            const dteDays = 0.5;
+
+            // Generate 7 strikes around ATM: -3, -2, -1, ATM, +1, +2, +3
+            const strikes = [];
+            for (let i = -3; i <= 3; i++) {
+                strikes.push(atm + (i * step));
+            }
+
+            strikes.forEach(strike => {
+                const isATM = strike === atm;
+                const isITM_CE = asset.ltp > strike;
+                const isITM_PE = asset.ltp < strike;
+
+                // Call Price
+                const callIntrinsic = Math.max(0, asset.ltp - strike);
+                const timeVal = 0.3989 * asset.ltp * iv * Math.sqrt(dteDays / 365.0);
+                const callLTP = (callIntrinsic + (timeVal * (isITM_CE ? 0.72 : 0.85))).toFixed(2);
+                const callOI = (Math.max(10, 180 - Math.abs(strike - atm) * 0.4)).toFixed(1);
+
+                // Put Price
+                const putIntrinsic = Math.max(0, strike - asset.ltp);
+                const putLTP = (putIntrinsic + (timeVal * (isITM_PE ? 0.72 : 0.85))).toFixed(2);
+                const putOI = (Math.max(10, 190 - Math.abs(strike - atm) * 0.45)).toFixed(1);
+
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-[#1c2536]/50 ${isATM ? 'bg-cyan-950/30 font-bold border-y border-cyan-800/60' : ''}`;
+                tr.innerHTML = `
+                    <td class="p-2 text-right ${isITM_CE ? 'text-amber-300 font-semibold' : 'text-slate-400'}">${callOI}</td>
+                    <td class="p-2 text-right text-emerald-400 font-mono">₹${callLTP}</td>
+                    <td class="p-2 text-center font-bold ${isATM ? 'text-cyan-300 bg-cyan-900/40 rounded' : 'text-white bg-[#080b11]'}">
+                        ${strike} ${isATM ? '<span class="text-[9px] text-amber-400 block font-normal">ATM</span>' : ''}
+                    </td>
+                    <td class="p-2 text-left text-rose-400 font-mono">₹${putLTP}</td>
+                    <td class="p-2 text-left ${isITM_PE ? 'text-amber-300 font-semibold' : 'text-slate-400'}">${putOI}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="tradeStrike('${strike}')" class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800 text-cyan-300 text-[10px] hover:bg-cyan-900">Trade</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function tradeStrike(strike) {
+            alert(`Selected Strike ₹${strike} for ${currentSymbol}`);
         }
 
         function calculateSensibullLevels(asset) {
@@ -456,6 +553,8 @@
 
             document.getElementById('indNews').innerText = engine.newsStatus;
             document.getElementById('indNews').className = engine.newsStatus === 'BULLISH' ? 'text-emerald-400' : (engine.newsStatus === 'BEARISH' ? 'text-rose-400' : 'text-amber-400');
+
+            document.getElementById('chainExpiryTag').innerText = expiryDate;
 
             let dteDays = 0.5;
             if (expiryDate === '09-Nov-2026') dteDays = 7.0;
@@ -537,6 +636,9 @@
                 div.innerHTML = `<b>${item.tf}</b><div class="text-[9px] font-bold">${item.dir}</div>`;
                 tfGrid.appendChild(div);
             });
+
+            // Re-render Live Option Chain Matrix Table
+            renderLiveOptionChainTable(asset);
         }
 
         function roundToPoint(val) {
@@ -549,11 +651,10 @@
 
             const displayList = MASTER_STOCK_DIRECTORY.filter(item => {
                 if (currentSegment === 'ALL') return true;
-                if (currentSegment === 'FNO') return item.segment === 'FNO';
-                if (currentSegment === 'INTRADAY') return item.segment === 'INTRADAY';
-                if (currentSegment === 'NON_FNO') return item.segment === 'NON_FNO';
-                if (currentSegment === 'LONGTERM') return item.segment === 'LONGTERM';
-                if (currentSegment === 'COMMODITY_ETF') return item.segment === 'COMMODITY_ETF';
+                if (currentSegment === 'FNO') return item.isFno === true;
+                if (currentSegment === 'BANKS') return item.category === 'BANKS';
+                if (currentSegment === 'IT') return item.category === 'IT';
+                if (currentSegment === 'AUTO') return item.category === 'AUTO';
                 return true;
             });
 
@@ -570,7 +671,7 @@
                                 ${item.exchange}
                             </span>
                         </div>
-                        <div class="text-[10px] text-slate-400 font-sans">${item.horizon}</div>
+                        <div class="text-[10px] text-slate-400 font-sans">${item.name}</div>
                     </td>
                     <td class="p-2.5 text-right font-bold text-white" onclick="selectSymbol('${item.symbol}')">
                         ₹${item.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -594,7 +695,7 @@
             const sb = calculateSensibullLevels(asset);
 
             document.getElementById('activeSymTitle').innerText = `${asset.symbol} (${asset.exchange})`;
-            document.getElementById('activeSegmentTag').innerText = asset.isFno ? asset.segment : 'CASH';
+            document.getElementById('activeSegmentTag').innerText = asset.isFno ? 'FNO' : 'CASH';
             document.getElementById('valLTP').innerText = asset.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
             document.getElementById('valVWAP').innerText = (asset.vwap || asset.ltp).toFixed(2);
             
@@ -617,6 +718,7 @@
             renderWatchlist();
         }
 
+        // UNIVERSAL SEARCH (ANY STOCK SEARCH ENGINE)
         function handleUniversalSearch() {
             const query = document.getElementById('symbolSearchInput').value.trim().toUpperCase();
             const dropdown = document.getElementById('searchDropdown');
@@ -634,7 +736,7 @@
 
             dropdown.innerHTML = '';
             if (results.length > 0) {
-                results.slice(0, 9).forEach(item => {
+                results.slice(0, 15).forEach(item => {
                     const div = document.createElement('div');
                     div.className = "p-2.5 hover:bg-[#1c2536] cursor-pointer flex items-center justify-between text-xs";
                     div.onclick = () => {
@@ -658,6 +760,11 @@
                     `;
                     dropdown.appendChild(div);
                 });
+            } else {
+                const div = document.createElement('div');
+                div.className = "p-3 text-center text-slate-400 text-xs";
+                div.innerText = "No matching stock found. Check symbol name.";
+                dropdown.appendChild(div);
             }
             dropdown.classList.remove('hidden');
         }
@@ -677,7 +784,7 @@
 
         function switchSegment(seg) {
             currentSegment = seg;
-            ['ALL', 'FNO', 'INTRADAY', 'NON_FNO', 'LONGTERM', 'COMMODITY_ETF'].forEach(s => {
+            ['ALL', 'FNO', 'BANKS', 'IT', 'AUTO'].forEach(s => {
                 const b = document.getElementById(`seg-${s}`);
                 if (b) {
                     if (s === seg) b.className = "segment-btn active px-3 py-1 rounded border border-[#1c2536] text-cyan-300";
