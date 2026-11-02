@@ -57,7 +57,7 @@
             <div id="searchDropdown" class="hidden absolute left-0 right-0 top-9 bg-[#111723] border border-[#1c2536] rounded-lg shadow-2xl z-50 max-h-64 overflow-y-auto divide-y divide-[#1c2536]"></div>
         </div>
 
-        <!-- Segment Filters Exactly Matching Screenshot -->
+        <!-- Segment Filters Matching Screenshot -->
         <div class="flex items-center gap-1 text-xs overflow-x-auto no-scrollbar py-0.5">
             <button onclick="switchSegment('ALL')" id="seg-ALL" class="segment-btn active px-3 py-1 rounded border border-[#1c2536] text-slate-300">All</button>
             <button onclick="switchSegment('FNO')" id="seg-FNO" class="segment-btn px-3 py-1 rounded border border-[#1c2536] text-slate-400">⚡ F&O Options</button>
@@ -117,7 +117,7 @@
                 <div id="chartContainer" class="w-full h-[280px] rounded overflow-hidden bg-[#080b11]"></div>
             </div>
 
-            <!-- Multi-Timeframe Trade Recommendation Engine (Exact Screenshot Layout) -->
+            <!-- Multi-Timeframe Trade Recommendation Engine -->
             <section class="p-3.5 rounded-xl bg-cyan-950/20 border border-cyan-800/60 shadow space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
@@ -193,7 +193,7 @@
                     </div>
                 </div>
 
-                <!-- ALL-TIMEFRAME CONFIRMATION GRID (1m, 5m, 15m, 1h, 1D) -->
+                <!-- ALL-TIMEFRAME CONFIRMATION GRID -->
                 <div class="bg-[#080b11] border border-[#1c2536] rounded p-2">
                     <div class="flex justify-between text-[10px] mb-2 font-mono">
                         <b class="text-slate-300">ALL-TIMEFRAME CONFIRMATION</b>
@@ -223,7 +223,7 @@
             </section>
         </div>
 
-        <!-- Right Pane: Active Assets Screener (Exact Screenshot Style) -->
+        <!-- Right Pane: Active Assets Screener -->
         <div class="w-full lg:w-2/5 p-2.5 sm:p-3 overflow-y-auto">
             <div class="bg-[#111723] border border-[#1c2536] rounded-xl overflow-hidden shadow">
                 <div class="p-2.5 bg-[#1c2536]/40 border-b border-[#1c2536] flex justify-between items-center text-xs">
@@ -262,9 +262,8 @@
     </div>
 
     <script>
-        // MASTER ASSET DIRECTORY (F&O Indices, Liquid Stocks, Non-F&O Cash Equities)
+        // MASTER ASSET DIRECTORY
         const MASTER_STOCK_DIRECTORY = [
-            // F&O Indices
             { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 24380.40, vwap: 24320.00, pcr: 1.24, step: 50, inCurated: true },
             { symbol: 'BANKNIFTY', name: 'Nifty Bank Index', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 51840.10, vwap: 51950.00, pcr: 0.86, step: 100, inCurated: true },
             { symbol: 'SENSEX', name: 'BSE Sensex Index', exchange: 'BSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 80120.50, vwap: 79950.00, pcr: 1.30, step: 100, inCurated: true },
@@ -272,7 +271,6 @@
             { symbol: 'BANKEX', name: 'BSE Bankex Index', exchange: 'BSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 58450.00, vwap: 58580.00, pcr: 0.88, step: 100, inCurated: true },
             { symbol: 'MIDCPNIFTY', name: 'Nifty Midcap Select', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Options', ltp: 12450.25, vwap: 12390.00, pcr: 1.35, step: 25, inCurated: true },
 
-            // Heavyweight F&O Stocks
             { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 2890.50, vwap: 2872.00, pcr: 1.31, step: 20, inCurated: true },
             { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 1682.20, vwap: 1690.00, pcr: 0.82, step: 10, inCurated: true },
             { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', exchange: 'NSE', segment: 'FNO', isFno: true, horizon: 'Intraday Momentum', ltp: 1245.80, vwap: 1238.00, pcr: 1.15, step: 10, inCurated: true },
@@ -281,14 +279,12 @@
             { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd', exchange: 'NSE', segment: 'INTRADAY', isFno: true, horizon: 'Intraday Volume Spike', ltp: 1650.10, vwap: 1638.00, pcr: 1.42, step: 20, inCurated: true },
             { symbol: 'TCS', name: 'Tata Consultancy Services', exchange: 'NSE', segment: 'LONGTERM', isFno: true, horizon: 'Accumulate for 1-3 Yrs', ltp: 4120.00, vwap: 4110.00, pcr: 1.12, step: 50, inCurated: true },
 
-            // Non-F&O Cash Equities (Delivery & Midcaps)
             { symbol: 'ZOMATO', name: 'Zomato Limited (Cash)', exchange: 'NSE', segment: 'NON_FNO', isFno: false, horizon: 'Platform Compounder', ltp: 264.50, vwap: 261.00, pcr: null, step: 2, inCurated: false },
             { symbol: 'JIOFIN', name: 'Jio Financial Services', exchange: 'NSE', segment: 'NON_FNO', isFno: false, horizon: 'Fintech Core Hold', ltp: 318.20, vwap: 315.00, pcr: null, step: 2, inCurated: false },
             { symbol: 'SUZLON', name: 'Suzlon Energy Ltd', exchange: 'NSE', segment: 'NON_FNO', isFno: false, horizon: 'Green Energy Cycle', ltp: 64.80, vwap: 63.90, pcr: null, step: 1, inCurated: false },
             { symbol: 'IREDA', name: 'Indian Renewable Energy', exchange: 'NSE', segment: 'NON_FNO', isFno: false, horizon: 'PSU Infra Bull', ltp: 218.40, vwap: 215.50, pcr: null, step: 2, inCurated: false },
             { symbol: 'RVNL', name: 'Rail Vikas Nigam Ltd', exchange: 'NSE', segment: 'NON_FNO', isFno: false, horizon: 'Rail CapEx Leader', ltp: 462.00, vwap: 458.00, pcr: null, step: 5, inCurated: false },
 
-            // Safe ETFs & Commodities
             { symbol: 'GOLDBEES', name: 'Nippon India Gold ETF', exchange: 'NSE', segment: 'COMMODITY_ETF', isFno: false, horizon: 'Inflation / Safe Haven', ltp: 72.80, vwap: 72.40, pcr: null, step: 1, inCurated: false },
             { symbol: 'NIFTYBEES', name: 'Nippon India Nifty 50 ETF', exchange: 'NSE', segment: 'COMMODITY_ETF', isFno: false, horizon: 'Passive Index Wealth', ltp: 268.40, vwap: 267.80, pcr: null, step: 1, inCurated: false }
         ];
@@ -300,8 +296,9 @@
         let candleSeries = null;
         let vwapSeries = null;
         let socket = null;
+        let currentCandle = null; // Live Tick Candle Tracker
+        const CANDLE_INTERVAL = 60; // 1-minute real-time candles
 
-        // Sensibull Max Pain & Support / Resistance
         function calculateSensibullLevels(asset) {
             const step = asset.step || 10;
             const atm = Math.round(asset.ltp / step) * step;
@@ -315,7 +312,6 @@
             };
         }
 
-        // Multi-Timeframe Confirmation Logic
         function generateTimeframeStates(isBull) {
             const tfNames = ['1m', '5m', '15m', '1h', '1D'];
             return tfNames.map((tf, index) => {
@@ -333,7 +329,7 @@
                 height: 280,
                 layout: { background: { color: '#080b11' }, textColor: '#94a3b8' },
                 grid: { vertLines: { color: '#141c2a' }, horzLines: { color: '#141c2a' } },
-                timeScale: { borderColor: '#1c2536', timeVisible: true }
+                timeScale: { borderColor: '#1c2536', timeVisible: true, secondsVisible: false }
             });
 
             candleSeries = chartInstance.addCandlestickSeries({
@@ -345,25 +341,67 @@
 
             const candleData = [];
             const vwapData = [];
-            let t = Math.floor(Date.now() / 1000) - (40 * 300);
+            const now = Math.floor(Date.now() / 1000);
+            const baseTime = now - (30 * CANDLE_INTERVAL);
             let currentP = asset.vwap * 0.995;
 
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 30; i++) {
+                let t = baseTime + (i * CANDLE_INTERVAL);
                 let open = currentP;
                 let close = open + (Math.sin(i * 0.4) * (asset.ltp * 0.0016));
-                let high = Math.max(open, close) + (asset.ltp * 0.0008);
-                let low = Math.min(open, close) - (asset.ltp * 0.0008);
+                let high = Math.max(open, close) + (asset.ltp * 0.0006);
+                let low = Math.min(open, close) - (asset.ltp * 0.0006);
                 candleData.push({ time: t, open, high, low, close });
                 vwapData.push({ time: t, value: asset.vwap });
                 currentP = close;
-                t += 300;
             }
-            candleData[candleData.length - 1].close = asset.ltp;
+
+            // Current live candle state
+            const currentCandleTime = now - (now % CANDLE_INTERVAL);
+            currentCandle = {
+                time: currentCandleTime,
+                open: currentP,
+                high: Math.max(currentP, asset.ltp),
+                low: Math.min(currentP, asset.ltp),
+                close: asset.ltp
+            };
+            candleData.push(currentCandle);
+            vwapData.push({ time: currentCandleTime, value: asset.vwap });
+
             candleSeries.setData(candleData);
             vwapSeries.setData(vwapData);
         }
 
-        // Render Multi-Timeframe Trade Plan Engine
+        // Real-Time Candle Live Update Method
+        function pushLiveTickToChart(price, vwap) {
+            if (!candleSeries || !price) return;
+
+            const now = Math.floor(Date.now() / 1000);
+            const candleTime = now - (now % CANDLE_INTERVAL);
+
+            if (!currentCandle || currentCandle.time !== candleTime) {
+                // Initialize new candle
+                currentCandle = {
+                    time: candleTime,
+                    open: price,
+                    high: price,
+                    low: price,
+                    close: price
+                };
+            } else {
+                // Update live running candle
+                currentCandle.high = Math.max(currentCandle.high, price);
+                currentCandle.low = Math.min(currentCandle.low, price);
+                currentCandle.close = price;
+            }
+
+            candleSeries.update(currentCandle);
+
+            if (vwapSeries && vwap) {
+                vwapSeries.update({ time: candleTime, value: vwap });
+            }
+        }
+
         function updateTradePlanUI() {
             const asset = MASTER_STOCK_DIRECTORY.find(u => u.symbol === currentSymbol) || MASTER_STOCK_DIRECTORY[0];
             const isBull = asset.ltp >= asset.vwap;
@@ -406,7 +444,6 @@
             document.getElementById('recScore').innerText = isBull ? '91/100 • BUY' : '22/100 • SELL';
             document.getElementById('recScore').className = isBull ? 'block text-emerald-400 font-bold' : 'block text-rose-400 font-bold';
 
-            // Update Timeframe Matrix Grid (1m, 5m, 15m, 1h, 1D)
             const tfGrid = document.getElementById('timeframeMatrix');
             tfGrid.innerHTML = '';
             const tfs = generateTimeframeStates(isBull);
@@ -419,7 +456,6 @@
             });
         }
 
-        // Render Active Assets Screener (Exact Screenshot Style)
         function renderWatchlist() {
             const tbody = document.getElementById('watchlistTbody');
             tbody.innerHTML = '';
@@ -497,7 +533,6 @@
             renderWatchlist();
         }
 
-        // Universal Search with Cash/F&O
         function handleUniversalSearch() {
             const query = document.getElementById('symbolSearchInput').value.trim().toUpperCase();
             const dropdown = document.getElementById('searchDropdown');
@@ -625,6 +660,10 @@
 
         // Live WebSocket Connector to Render Cloud Server
         function connectLiveWebSocket() {
+            if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+                return;
+            }
+
             const serverUrl = localStorage.getItem('hn_ws_url') || 'wss://harry-backend.onrender.com/ws/live';
             const badge = document.getElementById('liveStatusBadge');
 
@@ -645,11 +684,16 @@
                                 found.vwap = msg.data[sym].vwap;
                             }
                         });
+
                         const current = MASTER_STOCK_DIRECTORY.find(u => u.symbol === currentSymbol);
                         if (current) {
                             document.getElementById('valLTP').innerText = current.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
                             document.getElementById('valVWAP').innerText = current.vwap.toFixed(2);
+                            
+                            // Real-time tick update directly to chart
+                            pushLiveTickToChart(current.ltp, current.vwap);
                         }
+
                         updateTradePlanUI();
                         renderWatchlist();
                     }
@@ -658,10 +702,16 @@
                 socket.onclose = () => {
                     badge.innerText = "RECONNECTING...";
                     badge.className = "text-[9px] px-1.5 py-0.2 rounded-full bg-amber-950 text-amber-400 border border-amber-800 font-mono";
+                    socket = null;
                     setTimeout(connectLiveWebSocket, 3000);
                 };
+
+                socket.onerror = (err) => {
+                    console.error("WS error", err);
+                    if (socket) socket.close();
+                };
             } catch(e) {
-                console.error("WS error", e);
+                console.error("WS connection exception", e);
             }
         }
 
@@ -673,7 +723,11 @@
             const val = document.getElementById('wsServerInput').value.trim();
             localStorage.setItem('hn_ws_url', val);
             toggleServerSettings();
-            if (socket) socket.close();
+            if (socket) {
+                socket.onclose = null;
+                socket.close();
+                socket = null;
+            }
             connectLiveWebSocket();
         }
 
