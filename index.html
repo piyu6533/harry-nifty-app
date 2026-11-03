@@ -23,7 +23,7 @@
             <div>
                 <div class="flex items-center gap-1.5">
                     <h1 class="text-xs sm:text-sm font-bold text-white tracking-wide">harry-nifty <span class="text-[10px] text-cyan-400 font-mono">PRO</span></h1>
-                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">DYNAMIC MULTI-ASSET</span>
+                    <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">TICK-DRIVEN LIVE</span>
                     <span id="liveStatusBadge" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-950 text-[#00dc82] border border-[#00dc82]/40 font-mono">
                         ● LIVE FEED ACTIVE
                     </span>
@@ -74,7 +74,7 @@
                 <span id="activeSegmentTag" class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">INDEX</span>
             </div>
             <div class="text-[10px] text-slate-400 font-mono mt-0.5 flex flex-wrap gap-x-3">
-                <span>LTP: <b id="valLTP" class="text-white">23,627.30</b></span>
+                <span>LTP: <b id="valLTP" class="text-white">23,630.00</b></span>
                 <span>VWAP: <b id="valVWAP" class="text-cyan-400">23,584.27</b></span>
                 <span id="pcrSpan">PCR: <b id="valPCR" class="text-slate-200">1.18</b></span>
                 <span>Supertrend (21,1): <b id="valST" class="text-emerald-400">GREEN (BULLISH)</b></span>
@@ -290,40 +290,21 @@
 
     <script>
         const MASTER_STOCK_DIRECTORY = [
-            // INDICES (ACCURATE REAL STEPS)
-            { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'INDEX', ltp: 23627.30, vwap: 23584.27, high: 23665.00, low: 23482.80, close: 23440.80, pcr: 1.18, newsSentiment: 'BULLISH', step: 50 },
+            { symbol: 'NIFTY', name: 'Nifty 50 Index', exchange: 'NSE', segment: 'INDEX', ltp: 23630.00, vwap: 23584.27, high: 23665.00, low: 23482.80, close: 23440.80, pcr: 1.18, newsSentiment: 'BULLISH', step: 50 },
             { symbol: 'FINNIFTY', name: 'Nifty Financial Services', exchange: 'NSE', segment: 'INDEX', ltp: 24150.00, vwap: 24080.00, high: 24200.00, low: 23980.00, close: 24050.40, pcr: 1.15, newsSentiment: 'BULLISH', step: 50 },
             { symbol: 'BANKNIFTY', name: 'Nifty Bank Index', exchange: 'NSE', segment: 'INDEX', ltp: 55420.10, vwap: 55310.00, high: 55560.00, low: 55174.10, close: 55002.20, pcr: 0.95, newsSentiment: 'BULLISH', step: 100 },
             { symbol: 'MIDCPNIFTY', name: 'Nifty Midcap Select', exchange: 'NSE', segment: 'INDEX', ltp: 12560.00, vwap: 12510.00, high: 12590.00, low: 12450.00, close: 12510.50, pcr: 1.35, newsSentiment: 'BULLISH', step: 25 },
             { symbol: 'SENSEX', name: 'BSE Sensex Index', exchange: 'BSE', segment: 'INDEX', ltp: 81120.00, vwap: 80950.00, high: 81250.00, low: 80700.00, close: 80840.20, pcr: 1.25, newsSentiment: 'BULLISH', step: 100 },
-
-            // BANKING
             { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', exchange: 'NSE', segment: 'BANKS', ltp: 712.70, vwap: 704.50, high: 716.00, low: 694.00, close: 694.80, pcr: 1.10, newsSentiment: 'BULLISH', step: 5 },
             { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', exchange: 'NSE', segment: 'BANKS', ltp: 1268.00, vwap: 1258.00, high: 1274.00, low: 1248.00, close: 1256.00, pcr: 1.22, newsSentiment: 'BULLISH', step: 10 },
             { symbol: 'SBIN', name: 'State Bank of India', exchange: 'NSE', segment: 'BANKS', ltp: 852.00, vwap: 846.00, high: 858.00, low: 842.00, close: 846.50, pcr: 1.30, newsSentiment: 'BULLISH', step: 5 },
             { symbol: 'AXISBANK', name: 'Axis Bank Ltd', exchange: 'NSE', segment: 'BANKS', ltp: 1208.00, vwap: 1198.00, high: 1215.00, low: 1192.00, close: 1195.00, pcr: 1.05, newsSentiment: 'BULLISH', step: 10 },
             { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank', exchange: 'NSE', segment: 'BANKS', ltp: 1795.00, vwap: 1788.00, high: 1805.00, low: 1780.00, close: 1785.00, pcr: 1.12, newsSentiment: 'NEUTRAL', step: 20 },
-            { symbol: 'INDUSINDBK', name: 'IndusInd Bank Ltd', exchange: 'NSE', segment: 'BANKS', ltp: 1052.00, vwap: 1048.00, high: 1062.00, low: 1042.00, close: 1052.00, pcr: 0.90, newsSentiment: 'NEUTRAL', step: 10 },
-            { symbol: 'BANKBARODA', name: 'Bank of Baroda', exchange: 'NSE', segment: 'BANKS', ltp: 251.00, vwap: 248.00, high: 254.00, low: 246.00, close: 251.00, pcr: 1.20, newsSentiment: 'BULLISH', step: 2.5 },
-            { symbol: 'BAJFINANCE', name: 'Bajaj Finance Ltd', exchange: 'NSE', segment: 'BANKS', ltp: 6980.00, vwap: 6960.00, high: 7060.00, low: 6930.00, close: 6980.00, pcr: 1.05, newsSentiment: 'NEUTRAL', step: 50 },
-
-            // IT
             { symbol: 'INFY', name: 'Infosys Limited', exchange: 'NSE', segment: 'IT', ltp: 1868.00, vwap: 1852.00, high: 1875.00, low: 1845.00, close: 1855.00, pcr: 1.35, newsSentiment: 'BULLISH', step: 20 },
             { symbol: 'TCS', name: 'Tata Consultancy Services', exchange: 'NSE', segment: 'IT', ltp: 4155.00, vwap: 4138.00, high: 4170.00, low: 4120.00, close: 4135.00, pcr: 1.20, newsSentiment: 'BULLISH', step: 50 },
-            { symbol: 'WIPRO', name: 'Wipro Limited', exchange: 'NSE', segment: 'IT', ltp: 568.00, vwap: 564.00, high: 572.00, low: 560.00, close: 568.00, pcr: 1.20, newsSentiment: 'BULLISH', step: 5 },
-            { symbol: 'HCLTECH', name: 'HCL Technologies', exchange: 'NSE', segment: 'IT', ltp: 1792.00, vwap: 1780.00, high: 1805.00, low: 1770.00, close: 1792.00, pcr: 1.25, newsSentiment: 'BULLISH', step: 20 },
-
-            // AUTO & COMMODITIES
-            { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', exchange: 'NSE', segment: 'AUTO', ltp: 942.00, vwap: 935.00, high: 948.00, low: 928.00, close: 932.00, pcr: 1.15, newsSentiment: 'BULLISH', step: 10 },
-            { symbol: 'MARUTI', name: 'Maruti Suzuki India', exchange: 'NSE', segment: 'AUTO', ltp: 11490.00, vwap: 11440.00, high: 11560.00, low: 11400.00, close: 11490.00, pcr: 1.18, newsSentiment: 'BULLISH', step: 100 },
-            { symbol: 'TATASTEEL', name: 'Tata Steel Ltd', exchange: 'NSE', segment: 'METALS', ltp: 153.40, vwap: 151.20, high: 154.80, low: 149.80, close: 151.20, pcr: 1.25, newsSentiment: 'BULLISH', step: 2.5 },
-            { symbol: 'JSWSTEEL', name: 'JSW Steel Ltd', exchange: 'NSE', segment: 'METALS', ltp: 952.00, vwap: 946.00, high: 962.00, low: 942.00, close: 952.00, pcr: 1.04, newsSentiment: 'NEUTRAL', step: 10 },
-
-            // ENERGY & INFRA
             { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', exchange: 'NSE', segment: 'ENERGY', ltp: 1301.40, vwap: 1285.00, high: 1308.00, low: 1268.00, close: 1265.40, pcr: 1.35, newsSentiment: 'BULLISH', step: 10 },
-            { symbol: 'LT', name: 'Larsen & Toubro Ltd', exchange: 'NSE', segment: 'INFRA', ltp: 3605.00, vwap: 3585.00, high: 3630.00, low: 3560.00, close: 3605.00, pcr: 1.20, newsSentiment: 'BULLISH', step: 20 },
-            { symbol: 'BHARTIARTL', name: 'Bharti Airtel Ltd', exchange: 'NSE', segment: 'INFRA', ltp: 1665.00, vwap: 1652.00, high: 1675.00, low: 1645.00, close: 1665.00, pcr: 1.45, newsSentiment: 'BULLISH', step: 20 },
-            { symbol: 'ITC', name: 'ITC Limited', exchange: 'NSE', segment: 'FMCG', ltp: 479.00, vwap: 476.00, high: 482.00, low: 474.00, close: 479.00, pcr: 1.14, newsSentiment: 'BULLISH', step: 5 }
+            { symbol: 'TATAMOTORS', name: 'Tata Motors Ltd', exchange: 'NSE', segment: 'AUTO', ltp: 942.00, vwap: 935.00, high: 948.00, low: 928.00, close: 932.00, pcr: 1.15, newsSentiment: 'BULLISH', step: 10 },
+            { symbol: 'TATASTEEL', name: 'Tata Steel Ltd', exchange: 'NSE', segment: 'METALS', ltp: 153.40, vwap: 151.20, high: 154.80, low: 149.80, close: 151.20, pcr: 1.25, newsSentiment: 'BULLISH', step: 2.5 }
         ];
 
         let currentSymbol = 'NIFTY';
@@ -339,12 +320,11 @@
             return x > 0 ? 1 - prob : prob;
         }
 
-        // Live Market Skew Engine calibrated with Paytm Orderbook
-        function calculateRealOptionPrice(S, K, T, type) {
+        // Live Dynamic Option Pricing Engine: Har tick ke spot par live calculate karega
+        function calculateDynamicOptionPrice(S, K, T, type) {
             if (T <= 0.0005) T = 0.0005;
             const diffPct = (K - S) / S;
             
-            // Expiry day live IV skew
             let iv = 0.145;
             if (type === 'CE') {
                 iv = Math.max(0.08, 0.125 - diffPct * 1.2);
@@ -404,7 +384,7 @@
             return timeframes.map((tf) => ({ tf, dir: baseResult.direction }));
         }
 
-        // FULLY DYNAMIC OPTION CHAIN FOR ANY ASSET (EXACT SINGLE ATM)
+        // TICK-BY-TICK REAL-TIME OPTION CHAIN RENDERER
         function renderLiveOptionChain(asset, expiryDate) {
             const tbody = document.getElementById('optionChainTbody');
             tbody.innerHTML = '';
@@ -415,7 +395,7 @@
             // EXACT SINGLE ATM CALCULATION (Closest to spot)
             const exactATM = Math.round(asset.ltp / step) * step;
 
-            // Generate relative strikes around exact ATM
+            // Relative strikes around exact ATM
             const strikes = [-4, -3, -2, -1, 0, 1, 2, 3, 4].map(i => exactATM + (i * step));
 
             let dteDays = 0.5;
@@ -423,34 +403,19 @@
             else if (expiryDate.includes('23-Nov')) dteDays = 20.5;
             const T = dteDays / 365.0;
 
-            // SPECIAL LIVE CALIBRATION FOR NIFTY TODAY (MATCHING PAYTM ORDERBOOK EXACTLY)
-            const nseLiveNiftyLTPs = {
-                23450: { c_ltp: 198.40, p_ltp: 14.50, c_oi: "26.08L", p_oi: "1.46Cr" },
-                23500: { c_ltp: 140.30, p_ltp: 23.30, c_oi: "97.60L", p_oi: "3.44Cr" },
-                23550: { c_ltp: 102.15, p_ltp: 36.10, c_oi: "94.62L", p_oi: "2.14Cr" },
-                23600: { c_ltp: 71.65,  p_ltp: 55.15, c_oi: "2.24Cr", p_oi: "3.44Cr" },
-                23650: { c_ltp: 46.75,  p_ltp: 80.60, c_oi: "2.16Cr", p_oi: "1.13Cr" },
-                23700: { c_ltp: 28.10,  p_ltp: 113.05, c_oi: "2.49Cr", p_oi: "80.23L" },
-                23750: { c_ltp: 15.55,  p_ltp: 150.85, c_oi: "1.43Cr", p_oi: "15.78L" },
-                23800: { c_ltp: 8.00,   p_ltp: 192.80, c_oi: "2.37Cr", p_oi: "23.77L" }
-            };
-
             strikes.forEach(strike => {
-                // SINGLE ATM CONDITION ONLY
                 const isATM = (strike === exactATM);
 
-                let c_ltp, p_ltp, c_oi, p_oi;
-
-                if (asset.symbol === 'NIFTY' && nseLiveNiftyLTPs[strike]) {
-                    c_ltp = nseLiveNiftyLTPs[strike].c_ltp;
-                    p_ltp = nseLiveNiftyLTPs[strike].p_ltp;
-                    c_oi = nseLiveNiftyLTPs[strike].c_oi;
-                    p_oi = nseLiveNiftyLTPs[strike].p_oi;
+                // Continuous tick-by-tick calculation from spot LTP
+                const c_ltp = calculateDynamicOptionPrice(asset.ltp, strike, T, 'CE');
+                const p_ltp = calculateDynamicOptionPrice(asset.ltp, strike, T, 'PE');
+                
+                const dist = Math.abs(strike - exactATM);
+                let c_oi, p_oi;
+                if (asset.symbol === 'NIFTY') {
+                    c_oi = `${Math.max(0.8, (2.4 - (dist / step) * 0.35)).toFixed(2)}Cr`;
+                    p_oi = `${Math.max(0.8, (3.4 - (dist / step) * 0.45)).toFixed(2)}Cr`;
                 } else {
-                    c_ltp = Number(calculateRealOptionPrice(asset.ltp, strike, T, 'CE').toFixed(2));
-                    p_ltp = Number(calculateRealOptionPrice(asset.ltp, strike, T, 'PE').toFixed(2));
-                    
-                    const dist = Math.abs(strike - exactATM);
                     c_oi = `${Math.max(10, Math.round(150 - (dist / step) * 15))}L`;
                     p_oi = `${Math.max(10, Math.round(160 - (dist / step) * 16))}L`;
                 }
@@ -519,11 +484,16 @@
             const atm = Math.round(asset.ltp / step) * step;
             const recStrike = atm;
 
+            let dteDays = 0.5;
+            if (expiryDate.includes('09-Nov')) dteDays = 6.5;
+            else if (expiryDate.includes('23-Nov')) dteDays = 20.5;
+            const T = dteDays / 365.0;
+
             if (product === 'OPTIONS') {
                 document.getElementById('planHeaderTitle').innerText = `${asset.symbol} TRADE PLAN • OPTIONS [${expiryDate}]`;
                 document.getElementById('recContract').innerText = `${asset.symbol} ${recStrike} CE`;
                 
-                let premium = (asset.symbol === 'NIFTY') ? 46.75 : Number((asset.ltp * 0.0035).toFixed(2));
+                const premium = calculateDynamicOptionPrice(asset.ltp, recStrike, T, 'CE');
                 document.getElementById('recPremium').innerText = `₹${premium.toFixed(2)}`;
                 document.getElementById('recEntry').innerText = `₹${(premium * 0.98).toFixed(2)} – ₹${(premium * 1.02).toFixed(2)}`;
                 document.getElementById('recSL').innerText = `₹${(premium * 0.70).toFixed(2)}`;
@@ -545,6 +515,7 @@
                 tfGrid.appendChild(div);
             });
 
+            // Har baar option chain redraw call hoga
             renderLiveOptionChain(asset, expiryDate);
         }
 
@@ -668,6 +639,7 @@
             alert("Trade plan copied!");
         }
 
+        // WEBSOCKET: TICK MILTE HI LIVE REDRAW EXECUTE KAREGA
         function connectLiveWebSocket() {
             if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return;
             const serverUrl = localStorage.getItem('hn_ws_url') || 'wss://harry-backend.onrender.com/ws/live';
@@ -683,18 +655,23 @@
                 socket.onmessage = (event) => {
                     const msg = JSON.parse(event.data);
                     if (msg.type === "TICK_UPDATE" && msg.data) {
+                        let currentAssetUpdated = false;
                         Object.keys(msg.data).forEach(sym => {
                             const found = MASTER_STOCK_DIRECTORY.find(u => u.symbol === sym);
                             if (found && msg.data[sym].ltp > 0) {
                                 found.ltp = msg.data[sym].ltp;
                                 if (msg.data[sym].vwap) found.vwap = msg.data[sym].vwap;
+                                if (sym === currentSymbol) currentAssetUpdated = true;
                             }
                         });
+
                         const current = MASTER_STOCK_DIRECTORY.find(u => u.symbol === currentSymbol);
                         if (current) {
                             document.getElementById('valLTP').innerText = current.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2 });
                             document.getElementById('valVWAP').innerText = (current.vwap || current.ltp).toFixed(2);
                         }
+
+                        // CRITICAL FIX: WebSocket tick aate hi poora option chain live redraw hoga
                         updateTradePlanUI();
                         renderWatchlist();
                     }
